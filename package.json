@@ -1,0 +1,51 @@
+{
+	"name": "vite-plugin-php",
+	"version": "0.5.0",
+	"description": "Precompile PHP-files with the speed of Vite",
+	"keywords": [
+		"vite",
+		"vite-plugin",
+		"load php",
+		"use php",
+		"vite php",
+		"compile php",
+		"php",
+		"php-loader",
+		"php-compiler",
+		"loader"
+	],
+	"author": "Nikita 'donnikitos' Nitichevski <me@donnikitos.com> (https://donnikitos.com/)",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/donnikitos/vite-plugin-php/issues"
+	},
+	"homepage": "https://github.com/donnikitos/vite-plugin-php#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/donnikitos/vite-plugin-php.git"
+	},
+	"files": [
+		"dist"
+	],
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"scripts": {
+		"build": "npx unbuild",
+		"prepack": "npm run build"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@types/node": "^20.5.1",
+		"typescript": "^5.1.6",
+		"unbuild": "^1.2.1",
+		"vite": "^4.4.9"
+	}
+}
