@@ -72,8 +72,10 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			configureServer(server) {
 				server.middlewares.use(async (req, res, next) => {
 					if (req.url) {
-						let requestUrl =
-							req.url === '/' ? '/index.php' : req.url;
+						let requestUrl = req.url;
+						if (requestUrl.endsWith('/')) {
+							requestUrl += 'index.php';
+						}
 						requestUrl = requestUrl.substring(1);
 
 						const entry = entries.find((file) => {
