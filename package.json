@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-php",
-	"version": "0.5.0",
+	"version": "0.9.0",
 	"description": "Precompile PHP-files with the speed of Vite",
 	"keywords": [
 		"vite",
