@@ -9,17 +9,20 @@ export function escapePHP(inputFile: string, outputFile: string) {
 	const fileId = resolve(outputFile);
 	const input = readFileSync(inputFile).toString();
 
-	if (input.includes('<?') && !codeTokens.has(fileId)) {
+	if (!codeTokens.has(fileId)) {
 		codeTokens.set(fileId, new Map());
 	}
 	const fileTokens = codeTokens.get(fileId)!;
 
-	const out = input.replaceAll(/<\?(?:php|)(.+?)\?>/gi, (match) => {
+	const isJS = inputFile.includes('.js') || inputFile.includes('.ts');
+	const isML = inputFile.includes('.php') || inputFile.includes('.htm');
+
+	const out = input.replaceAll(/<\?(?:php|).+?\?>/gi, (match) => {
 		let token = makeID();
 
-		if (inputFile.includes('.js') || inputFile.includes('.ts')) {
+		if (isJS) {
 			token = `/*${token}*/`;
-		} else if (inputFile.includes('.php') || inputFile.includes('.htm')) {
+		} else if (isML) {
 			token = `<!--${token}-->`;
 		}
 
