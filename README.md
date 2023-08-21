@@ -52,9 +52,10 @@ usePHP({
 
 Should you have multiple entry-points, you will be able to access each one according to this chart:
 
-| Entry       | Accessible routes         |
-| ----------- | ------------------------- |
-| index.php   | `/` `/index` `/index.php` |
-| about.php   | `/about` `/about.php`     |
-| contact.php | `/contact` `/contact.php` |
-| ...         | ...                       |
+| Entry file        | Accessible routes                     | Build file        |
+| ----------------- | ------------------------------------- | ----------------- |
+| index.php         | `/` `/index` `/index.php`             | index.php         |
+| about.php         | `/about` `/about.php`                 | about.php         |
+| about/details.php | `/about/details` `/about/details.php` | about/details.php |
+| contact.php       | `/contact` `/contact.php`             | contact.php       |
+| ...               | ...                                   | ...               |
