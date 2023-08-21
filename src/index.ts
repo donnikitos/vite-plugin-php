@@ -1,4 +1,4 @@
-import { Plugin } from 'vite';
+import { Plugin, ResolvedConfig } from 'vite';
 import runPHP, { PHP_CLI_Args } from './utils/runPHP';
 import { existsSync, rmSync } from 'fs';
 import { escapePHP, unescapePHP } from './utils/escapePHP';
@@ -22,12 +22,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 	runPHP.binary = binary;
 
-	const entries = Array.isArray(entry) ? entry : [entry];
+	let config: undefined | ResolvedConfig = undefined;
 
-	const gitIgnoreFile = `${tempDir}/.gitignore`;
-	if (!existsSync(gitIgnoreFile)) {
-		writeFile(gitIgnoreFile, '*\n**/*.php.html');
-	}
+	const entries = Array.isArray(entry) ? entry : [entry];
 
 	function escapeFile(file: string) {
 		const tempFile = `${tempDir}/${file}.html`;
@@ -37,12 +34,23 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		return tempFile;
 	}
 
+	function cleanUp(dir = '') {
+		const parentDir = dir ? dir + '/' : dir;
+
+		rmSync(parentDir + tempDir, { recursive: true, force: true });
+	}
+
 	return [
 		{
 			name: 'prepare-php',
 			config: {
 				order: 'post',
 				handler(config, env) {
+					const gitIgnoreFile = `${tempDir}/.gitignore`;
+					if (!existsSync(gitIgnoreFile)) {
+						writeFile(gitIgnoreFile, '*\n**/*.php.html');
+					}
+
 					const inputs = entries.map(escapeFile);
 
 					return {
@@ -53,6 +61,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					};
 				},
 			},
+			configResolved(_config) {
+				config = _config;
+			},
 		},
 		{
 			name: 'serve-php',
@@ -60,74 +71,80 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			enforce: 'pre',
 			configureServer(server) {
 				server.middlewares.use(async (req, res, next) => {
-					const requestUrl =
-						req.url === '/' || req.url === '/index.html'
-							? '/index.html'
-							: req.url;
+					if (req.url) {
+						let requestUrl =
+							req.url === '/' ? '/index.php' : req.url;
+						requestUrl = requestUrl.substring(1);
 
-					let tempFile = `${tempDir}/`;
+						const entry = entries.find((file) => {
+							return (
+								file === requestUrl ||
+								file.substring(0, file.lastIndexOf('.')) ===
+									requestUrl
+							);
+						});
 
-					if (requestUrl?.endsWith('.php')) {
-						tempFile += requestUrl + '.html';
-					} else if (requestUrl?.endsWith('.html')) {
-						tempFile += requestUrl?.replace('.html', '.php.html');
-					} else {
-						tempFile += requestUrl + '.php.html';
-					}
+						if (entry) {
+							let tempFile = `${tempDir}/`;
+							tempFile += entry + '.html';
 
-					if (existsSync(resolve(tempFile))) {
-						const code = unescapePHP(tempFile);
+							if (existsSync(resolve(tempFile))) {
+								const code = unescapePHP(tempFile);
 
-						const out = await server.transformIndexHtml(
-							requestUrl || '/',
-							runPHP(code, args),
-						);
+								const out = await server.transformIndexHtml(
+									requestUrl || '/',
+									runPHP(code, args),
+								);
 
-						res.end(out);
-						return;
+								res.end(out);
+								return;
+							}
+						}
 					}
 
 					next();
 				});
 			},
 			handleHotUpdate({ server, file }) {
-				if (file.endsWith('.php')) {
-					const entry = entries.find(
-						(entryFile) =>
-							server.config.root + '/' + entryFile === file,
-					);
+				const entry = entries.find(
+					(entryFile) =>
+						file.endsWith(entryFile) && resolve(entryFile) === file,
+				);
 
-					if (entry) {
-						escapeFile(entry);
+				if (entry) {
+					escapeFile(entry);
 
-						server.ws.send({
-							type: 'full-reload',
-							path: '*',
-						});
-					}
+					server.ws.send({
+						type: 'full-reload',
+						path: '*',
+					});
 				}
+			},
+			buildEnd(error) {
+				cleanUp();
 			},
 		},
 		{
 			name: 'build-php',
 			apply: 'build',
 			resolveId(source, importer, options) {
-				console.log('source', source);
 				if (
-					importer?.endsWith('.php.html') &&
+					importer?.endsWith('.html') &&
 					importer.includes(`/${tempDir}/`)
 				) {
 					return { id: resolve(source) };
 				}
 			},
 			closeBundle() {
+				const distDir = config?.build.outDir;
+
 				entries.forEach((file) => {
 					const code = unescapePHP(`${tempDir}/${file}.html`);
 
-					writeFile(`dist/${file}`, code);
+					writeFile(`${distDir}/${file}`, code);
 				});
 
-				rmSync(`dist/${tempDir}`, { recursive: true, force: true });
+				cleanUp(distDir);
 			},
 		},
 	];
