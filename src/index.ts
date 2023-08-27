@@ -133,7 +133,10 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 										(resolve, reject) => {
 											http.request(
 												url.toString(),
-												req,
+												{
+													method: req.method,
+													headers: req.headers,
+												},
 												(msg) => {
 													msg.on('data', resolve);
 												},
