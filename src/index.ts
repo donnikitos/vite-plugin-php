@@ -72,7 +72,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			configureServer(server) {
 				server.middlewares.use(async (req, res, next) => {
 					if (req.url) {
-						let requestUrl = req.url;
+						const url = new URL(req.url, 'http://localhost');
+
+						let requestUrl = url.pathname;
 						if (requestUrl.endsWith('/')) {
 							requestUrl += 'index.php';
 						}
