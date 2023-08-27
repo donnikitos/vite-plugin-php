@@ -15,6 +15,11 @@ export default defineConfig({
 });
 ```
 
+#### ⚠️ Attention!
+
+Since version `^1.0.0` the plugin uses PHP's dev-server to compute PHP code and to provide all usual server variables and features.\
+If you encounter a bug, use the prior `0.9.1` version of the plugin!
+
 ## Write some PHP code in your `index.php`
 
 ```php
