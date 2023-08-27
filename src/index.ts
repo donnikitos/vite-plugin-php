@@ -1,28 +1,34 @@
-import { Plugin, ResolvedConfig } from 'vite';
-import runPHP, { PHP_CLI_Args } from './utils/runPHP';
+import { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 import { existsSync, rmSync } from 'fs';
 import { escapePHP, unescapePHP } from './utils/escapePHP';
 import { resolve } from 'path';
 import writeFile from './utils/writeFile';
+import http from 'http';
+import phpServer from './utils/phpServer';
 
 type UsePHPConfig = {
 	binary?: string;
 	entry?: string | string[];
-	args?: PHP_CLI_Args;
 	tempDir?: string;
+	cleanup?: {
+		dev?: boolean;
+		build?: boolean;
+	};
 };
 
 function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	const {
 		binary = 'php',
 		entry = 'index.php',
-		args,
 		tempDir = '.php-tmp',
+		cleanup = {},
 	}: UsePHPConfig = cfg;
+	const { dev: devCleanup = true } = cleanup;
 
-	runPHP.binary = binary;
+	phpServer.binary = binary;
 
 	let config: undefined | ResolvedConfig = undefined;
+	let viteServer: undefined | ViteDevServer = undefined;
 
 	const entries = Array.isArray(entry) ? entry : [entry];
 
@@ -34,11 +40,32 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		return tempFile;
 	}
 
-	function cleanUp(dir = '') {
+	function cleanupTemp(dir = '') {
 		const parentDir = dir ? dir + '/' : dir;
 
 		rmSync(parentDir + tempDir, { recursive: true, force: true });
 	}
+
+	function onExit() {
+		if (config?.command === 'serve') {
+			phpServer.stop();
+
+			devCleanup && cleanupTemp();
+		}
+
+		process.exit();
+	}
+
+	[
+		'exit',
+		'SIGINT',
+		'SIGUSR1',
+		'SIGUSR2',
+		'uncaughtException',
+		'SIGTERM',
+	].forEach((eventType) => {
+		process.on(eventType, onExit.bind(null));
+	});
 
 	return [
 		{
@@ -70,40 +97,65 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			apply: 'serve',
 			enforce: 'pre',
 			configureServer(server) {
+				viteServer = server;
+
+				phpServer.start(viteServer?.config.root);
+
 				server.middlewares.use(async (req, res, next) => {
-					if (req.url) {
-						const url = new URL(req.url, 'http://localhost');
-
-						let requestUrl = url.pathname;
-						if (requestUrl.endsWith('/')) {
-							requestUrl += 'index.php';
-						}
-						requestUrl = requestUrl.substring(1);
-
-						const entry = entries.find((file) => {
-							return (
-								file === requestUrl ||
-								file.substring(0, file.lastIndexOf('.')) ===
-									requestUrl
+					try {
+						if (req.url) {
+							const url = new URL(
+								req.url,
+								'http://localhost:' + phpServer.port,
 							);
-						});
 
-						if (entry) {
-							let tempFile = `${tempDir}/`;
-							tempFile += entry + '.html';
+							let requestUrl = url.pathname;
+							if (requestUrl.endsWith('/')) {
+								requestUrl += 'index.php';
+							}
+							requestUrl = requestUrl.substring(1);
 
-							if (existsSync(resolve(tempFile))) {
-								const code = unescapePHP(tempFile);
-
-								const out = await server.transformIndexHtml(
-									requestUrl || '/',
-									runPHP(code, args),
+							const entry = entries.find((file) => {
+								return (
+									file === requestUrl ||
+									file.substring(0, file.lastIndexOf('.')) ===
+										requestUrl
 								);
+							});
 
-								res.end(out);
-								return;
+							if (entry) {
+								const tempFile = `${tempDir}/${entry}.html`;
+
+								if (existsSync(resolve(tempFile))) {
+									url.pathname = tempFile;
+
+									const phpResult = await new Promise<string>(
+										(resolve, reject) => {
+											http.request(
+												url.toString(),
+												req,
+												(msg) => {
+													msg.on('data', resolve);
+												},
+											)
+												.on('error', reject)
+												.end();
+										},
+									);
+
+									let out = phpResult.toString();
+									out = await server.transformIndexHtml(
+										requestUrl || '/',
+										out,
+									);
+
+									res.end(out);
+									return;
+								}
 							}
 						}
+					} catch (error) {
+						console.error(`Error: ${error}`);
 					}
 
 					next();
@@ -123,9 +175,6 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 						path: '*',
 					});
 				}
-			},
-			buildEnd(error) {
-				cleanUp();
 			},
 		},
 		{
@@ -148,7 +197,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					writeFile(`${distDir}/${file}`, code);
 				});
 
-				cleanUp(distDir);
+				cleanupTemp(distDir);
 			},
 		},
 	];
