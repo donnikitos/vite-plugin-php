@@ -30,13 +30,13 @@ export function escapePHP(inputFile: string, outputFile: string) {
 	writeFile(outputFile, out);
 }
 
-export function unescapePHP(file: string) {
+export function unescapePHP(file: string, tokensFile?: string) {
 	const input = readFileSync(file).toString();
 	let out = input;
 
-	const tokensFile = file + '.json';
-	if (existsSync(tokensFile)) {
-		const codeTokens = JSON.parse(readFileSync(tokensFile).toString());
+	const tknsFile = tokensFile || file + '.json';
+	if (existsSync(tknsFile)) {
+		const codeTokens = JSON.parse(readFileSync(tknsFile).toString());
 
 		Object.entries(codeTokens).forEach(([token, code]) => {
 			out = out.replace(token, (match) => {

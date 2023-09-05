@@ -195,7 +195,10 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				const distDir = config?.build.outDir;
 
 				entries.forEach((file) => {
-					const code = unescapePHP(`${tempDir}/${file}.html`);
+					const code = unescapePHP(
+						`${distDir}/${tempDir}/${file}.html`,
+						`${tempDir}/${file}.html.json`,
+					);
 
 					writeFile(`${distDir}/${file}`, code);
 				});
