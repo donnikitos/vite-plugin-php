@@ -1,14 +1,15 @@
 import { spawn } from 'child_process';
-import { resolve } from 'path';
 
 function start(root: string) {
 	if (!globalThis.php?.pid) {
+		const routerFileUrl = new URL('./router.php', import.meta.url);
+
 		globalThis.php = spawn(phpServer.binary, [
 			'-S',
 			'localhost:' + phpServer.port,
 			'-t',
 			root,
-			resolve(__dirname + '/router.php'),
+			decodeURI(routerFileUrl.pathname),
 		])
 			.once('spawn', () => {
 				console.log(

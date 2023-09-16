@@ -1,8 +1,9 @@
 {
 	"compilerOptions": {
 		"outDir": "dist",
-		"target": "ES2021",
+		"target": "ES2020",
 		"moduleResolution": "Node",
+		"module": "ES2020",
 		"strict": true,
 		"declaration": true,
 		"sourceMap": true,
