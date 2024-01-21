@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import writeFile from './utils/writeFile';
 import http from 'http';
 import phpServer from './utils/phpServer';
+import { globSync } from 'fast-glob';
 
 type UsePHPConfig = {
 	binary?: string;
@@ -30,7 +31,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	let config: undefined | ResolvedConfig = undefined;
 	let viteServer: undefined | ViteDevServer = undefined;
 
-	const entries = Array.isArray(entry) ? entry : [entry];
+	let entries = Array.isArray(entry) ? entry : [entry];
 
 	function escapeFile(file: string) {
 		const tempFile = `${tempDir}/${file}.html`;
@@ -77,6 +78,15 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					if (!existsSync(gitIgnoreFile)) {
 						writeFile(gitIgnoreFile, '*\n**/*.php.html');
 					}
+
+					entries = entries.flatMap((entry) =>
+						globSync(entry, {
+							dot: true,
+							onlyFiles: true,
+							unique: true,
+							ignore: [tempDir, config.build?.outDir || 'dist'],
+						}),
+					);
 
 					const inputs = entries.map(escapeFile);
 

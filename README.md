@@ -15,11 +15,6 @@ export default defineConfig({
 });
 ```
 
-#### ⚠️ Attention!
-
-Since version `^1.0.0` the plugin uses PHP's dev-server to compute PHP code and to provide all usual server variables and features.\
-If you encounter a bug, use the prior `0.9.1` version of the plugin!
-
 ## Write some PHP code in your `index.php`
 
 ```php
@@ -65,6 +60,24 @@ Should you have multiple entry-points, you will be able to access each one accor
 | contact.php       | `/contact` `/contact.php`             | `contact.php`       |
 | shop/index.php    | `/shop/` `/shop/index.php`            | `shop/index.php`    |
 | ...               | ...                                   | ...                 |
+
+**⚡️ New feature:** Wildcard selectors!\
+Since version 1.0.6 you can specify wildcard entry points:
+
+```js
+usePHP({
+	binary: '/opt/lampp/bin/php-8.1.10',
+	entry: [
+		'index.php',
+		'about.php',
+		'contact.php',
+		'pages/**/*.php',
+		'partials/*.php',
+	],
+});
+```
+
+These entries will also render according to the routing table above.
 
 ## Known issues
 
