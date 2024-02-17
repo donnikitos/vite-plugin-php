@@ -71,32 +71,30 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	return [
 		{
 			name: 'prepare-php',
-			config: {
-				order: 'post',
-				handler(config, env) {
-					const gitIgnoreFile = `${tempDir}/.gitignore`;
-					if (!existsSync(gitIgnoreFile)) {
-						writeFile(gitIgnoreFile, '*\n**/*.php.html');
-					}
+			enforce: 'post',
+			config(config, env) {
+				const gitIgnoreFile = `${tempDir}/.gitignore`;
+				if (!existsSync(gitIgnoreFile)) {
+					writeFile(gitIgnoreFile, '*\n**/*.php.html');
+				}
 
-					entries = entries.flatMap((entry) =>
-						globSync(entry, {
-							dot: true,
-							onlyFiles: true,
-							unique: true,
-							ignore: [tempDir, config.build?.outDir || 'dist'],
-						}),
-					);
+				entries = entries.flatMap((entry) =>
+					globSync(entry, {
+						dot: true,
+						onlyFiles: true,
+						unique: true,
+						ignore: [tempDir, config.build?.outDir || 'dist'],
+					}),
+				);
 
-					const inputs = entries.map(escapeFile);
+				const inputs = entries.map(escapeFile);
 
-					return {
-						build: {
-							rollupOptions: { input: inputs },
-						},
-						optimizeDeps: { entries: inputs },
-					};
-				},
+				return {
+					build: {
+						rollupOptions: { input: inputs },
+					},
+					optimizeDeps: { entries: inputs },
+				};
 			},
 			configResolved(_config) {
 				config = _config;
