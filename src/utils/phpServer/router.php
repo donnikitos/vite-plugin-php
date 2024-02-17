@@ -11,5 +11,9 @@ $source = str_replace(
 );
 
 die((function ($__SOURCE) {
-	eval("?>$__SOURCE<?php");
+	try {
+		return eval("?> $__SOURCE <?php");
+	} catch (\Throwable $th) {
+		return $th->getMessage();
+	}
 })($source));
