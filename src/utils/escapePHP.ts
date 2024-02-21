@@ -12,7 +12,7 @@ export function escapePHP(inputFile: string, outputFile: string) {
 	const isJS = inputFile.includes('.js') || inputFile.includes('.ts');
 	const isML = inputFile.includes('.php') || inputFile.includes('.htm');
 
-	const out = input.replaceAll(/<\?(?:php|).+?\?>/gis, (match) => {
+	const out = input.replace(/<\?(?:php|).+?(\?>|$)/gis, (match) => {
 		let token = makeID();
 
 		if (isJS) {
