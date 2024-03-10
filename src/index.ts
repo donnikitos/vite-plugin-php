@@ -139,6 +139,8 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 									const phpResult = await new Promise<string>(
 										(resolve, reject) => {
+											const chunks: Uint8Array[] = [];
+
 											http.request(
 												url.toString(),
 												{
@@ -146,7 +148,18 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 													headers: req.headers,
 												},
 												(msg) => {
-													msg.on('data', resolve);
+													msg.on('data', (data) =>
+														chunks.push(data),
+													);
+
+													msg.on('end', () => {
+														const result =
+															Buffer.concat(
+																chunks,
+															).toString('utf8');
+
+														resolve(result);
+													});
 												},
 											)
 												.on('error', reject)
