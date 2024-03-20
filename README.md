@@ -15,6 +15,9 @@ export default defineConfig({
 });
 ```
 
+Check out the starter repo for an easy and convenient start:
+<a href="https://github.com/nititech/php-vite-starter" target="_blank"><img src="https://nititech.de/kosmo-starter-button.png" alt="Starter Repo"></a>
+
 ## Write some PHP code in your `index.php`
 
 ```php
@@ -94,6 +97,27 @@ If you encounter any other bugs or need some other features feel free to open an
 Love open source? Enjoying my project?\
 Your support can keep the momentum going! Consider a donation to fuel the creation of more innovative open source software.
 
-| via Ko-Fi                                                                         | Buy me a coffee                                                                                                                                                 | via PayPal                                                                                                                                                             |
-| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Y8Y2ALMG) | <a href="https://www.buymeacoffee.com/donnikitos" target="_blank"><img src="https://nititech.de/donate-buymeacoffee.png" alt="Buy Me A Coffee" width="174"></a> | <a href="https://www.paypal.com/donate/?hosted_button_id=EPXZPRTR7JHDW" target="_blank"><img src="https://nititech.de/donate-paypal.png" alt="PayPal" width="174"></a> |
+<table>
+	<tr>
+		<td>
+			via Ko-Fi
+		</td>
+		<td>
+			Buy me a coffee
+		</td>
+		<td>
+			via PayPal
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<a href="https://ko-fi.com/Y8Y2ALMG" target="_blank"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Ko-Fi" width="174"></a>
+		</td>
+		<td>
+			<a href="https://www.buymeacoffee.com/donnikitos" target="_blank"><img src="https://nititech.de/donate-buymeacoffee.png" alt="Buy Me A Coffee" width="174"></a>
+		</td>
+		<td>
+			<a href="https://www.paypal.com/donate/?hosted_button_id=EPXZPRTR7JHDW" target="_blank"><img src="https://nititech.de/donate-paypal.png" alt="PayPal" width="174"></a>
+		</td>
+	</tr>
+</table>
