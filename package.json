@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-php",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"description": "Precompile PHP-files with the speed of Vite",
 	"keywords": [
 		"vite",
@@ -51,10 +51,10 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@types/node": "^20.11.5",
+		"@types/node": "^20.12.7",
 		"fast-glob": "^3.3.2",
-		"typescript": "^5.3.3",
+		"typescript": "^5.4.5",
 		"unbuild": "^2.0.0",
-		"vite": "^5.1.3"
+		"vite": "^5.2.8"
 	}
 }
