@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
 
 function start(root: string) {
 	if (!globalThis.php?.pid) {
@@ -9,7 +10,7 @@ function start(root: string) {
 			'localhost:' + phpServer.port,
 			'-t',
 			root,
-			decodeURI(routerFileUrl.pathname),
+			fileURLToPath(routerFileUrl),
 		])
 			.once('spawn', () => {
 				console.log(
