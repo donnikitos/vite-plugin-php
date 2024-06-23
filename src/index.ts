@@ -7,6 +7,8 @@ import http from 'http';
 import phpServer from './utils/phpServer';
 import fastGlob from 'fast-glob';
 
+const internalParam = '__314159265359__';
+
 type UsePHPConfig = {
 	binary?: string;
 	entry?: string | string[];
@@ -118,6 +120,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 							if (config?.server.port) {
 								url.port = config.server.port.toString();
 							}
+							const requestUrl = url.pathname;
 
 							if (url.pathname.endsWith('/')) {
 								url.pathname += 'index.php';
@@ -146,6 +149,14 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 								if (existsSync(resolve(tempFile))) {
 									url.pathname = tempFile;
 									url.port = phpServer.port.toString();
+
+									url.searchParams.set(
+										internalParam,
+										new URLSearchParams({
+											REQUEST_URI: requestUrl,
+											PHP_SELF: '/' + entry,
+										}).toString(),
+									);
 
 									const phpResult = await new Promise<string>(
 										(resolve, reject) => {
