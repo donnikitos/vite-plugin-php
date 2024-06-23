@@ -5,11 +5,12 @@ import { resolve } from 'path';
 import writeFile from './utils/writeFile';
 import http from 'http';
 import phpServer from './utils/phpServer';
-import { globSync } from 'fast-glob';
+import fastGlob from 'fast-glob';
 
 type UsePHPConfig = {
 	binary?: string;
 	entry?: string | string[];
+	rewriteUrl?: (requestUrl: URL) => URL | undefined;
 	tempDir?: string;
 	cleanup?: {
 		dev?: boolean;
@@ -21,6 +22,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	const {
 		binary = 'php',
 		entry = 'index.php',
+		rewriteUrl = (requestUrl) => requestUrl,
 		tempDir = '.php-tmp',
 		cleanup = {},
 	}: UsePHPConfig = cfg;
@@ -79,7 +81,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				}
 
 				entries = entries.flatMap((entry) =>
-					globSync(entry, {
+					fastGlob.globSync(entry, {
 						dot: true,
 						onlyFiles: true,
 						unique: true,
@@ -112,22 +114,29 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				server.middlewares.use(async (req, res, next) => {
 					try {
 						if (req.url) {
-							const url = new URL(
-								req.url,
-								'http://localhost:' + phpServer.port,
-							);
-
-							let requestUrl = url.pathname;
-							if (requestUrl.endsWith('/')) {
-								requestUrl += 'index.php';
+							const url = new URL(req.url, 'http://localhost');
+							if (config?.server.port) {
+								url.port = config.server.port.toString();
 							}
-							requestUrl = requestUrl.substring(1);
+
+							if (url.pathname.endsWith('/')) {
+								url.pathname += 'index.php';
+							}
+
+							const routedUrl = rewriteUrl(url);
+							if (routedUrl) {
+								url.pathname = routedUrl.pathname;
+								url.search = routedUrl.search;
+								url.hash = routedUrl.hash;
+							}
+
+							const entryPathname = url.pathname.substring(1);
 
 							const entry = entries.find((file) => {
 								return (
-									file === requestUrl ||
+									file === entryPathname ||
 									file.substring(0, file.lastIndexOf('.')) ===
-										requestUrl
+										entryPathname
 								);
 							});
 
@@ -136,6 +145,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 								if (existsSync(resolve(tempFile))) {
 									url.pathname = tempFile;
+									url.port = phpServer.port.toString();
 
 									const phpResult = await new Promise<string>(
 										(resolve, reject) => {
@@ -169,7 +179,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 									let out = phpResult.toString();
 									out = await server.transformIndexHtml(
-										requestUrl || '/',
+										entryPathname || '/',
 										out,
 									);
 
