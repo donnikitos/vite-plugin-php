@@ -115,7 +115,12 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 				server.middlewares.use(async (req, res, next) => {
 					try {
-						if (req.url) {
+						if (
+							req.url &&
+							!['/@vite', '/@fs'].some((path) =>
+								req.url!.startsWith(path),
+							)
+						) {
 							const url = new URL(req.url, 'http://localhost');
 							if (config?.server.port) {
 								url.port = config.server.port.toString();
