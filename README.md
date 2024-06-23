@@ -15,8 +15,10 @@ export default defineConfig({
 });
 ```
 
-Check out the starter repo for an easy and convenient start:
+Check out the [starter repo](https://github.com/nititech/php-vite-starter) for an easy and convenient start:
 <a href="https://github.com/nititech/php-vite-starter" target="_blank"><img src="https://nititech.de/kosmo-starter-button.png" alt="Starter Repo"></a>
+
+#### ⚡️⚡️⚡️ New feature: URL rewrite!
 
 ## Write some PHP code in your `index.php`
 
@@ -43,6 +45,21 @@ The plugin will serve you the processed `index.php` as usual, including all impo
 
 ## Configuration
 
+The configuration takes following properties:
+
+```ts
+type UsePHPConfig = {
+	binary?: string;
+	entry?: string | string[];
+	rewriteUrl?: (requestUrl: URL) => URL | undefined;
+	tempDir?: string;
+	cleanup?: {
+		dev?: boolean;
+		build?: boolean;
+	};
+};
+```
+
 By default the plugin is trying to access the system `php`-binary and load the `index.php` file as the main entry point.
 However you have the possibility to use an other binary or even compile multiple entry-points:
 
@@ -64,7 +81,6 @@ Should you have multiple entry-points, you will be able to access each one accor
 | shop/index.php    | `/shop/` `/shop/index.php`            | `shop/index.php`    |
 | ...               | ...                                   | ...                 |
 
-**⚡️ New feature:** Wildcard selectors!\
 Since version 1.0.6 you can specify wildcard entry points:
 
 ```js
@@ -81,6 +97,29 @@ usePHP({
 ```
 
 These entries will also render according to the routing table above.
+
+##### Rewrite urls
+
+If you are using some sort of Apaches _mod_rewrite_ magic or nginx rewrite rules you can simulate them with the newly added in `rewriteUrl` property.
+The rewriteUrl function has one parameter - the requested URL given as URL object - and return either a modified URL object or undefined:
+
+```js
+usePHP({
+	entry: ['index.php', 'partials/**/*.php'],
+	rewriteUrl(requestUrl) {
+		if (['.js', '.css'].some((s) => requestUrl.pathname.includes(s))) {
+			return;
+		}
+
+		requestUrl.search = '_request_=' + requestUrl.pathname;
+		requestUrl.pathname = 'index.php';
+
+		return requestUrl;
+	},
+});
+```
+
+⚠️ **Attention:** If using the rewriteUrl property you will need to exclude (_return undefined_) assets like CSS, JavaScript, Images, etc.. on your own!
 
 ## Known issues
 

@@ -1,7 +1,7 @@
 {
 	"name": "vite-plugin-php",
-	"version": "1.0.11",
-	"description": "Precompile PHP-files with the speed of Vite",
+	"version": "1.0.20",
+	"description": "Process PHP-files with the speed and tools of Vite",
 	"keywords": [
 		"vite",
 		"vite-plugin",
@@ -12,7 +12,10 @@
 		"php",
 		"php-loader",
 		"php-compiler",
-		"loader"
+		"loader",
+		"url rewrite",
+		"url router",
+		"mod_rewrite"
 	],
 	"author": "Nikita 'donnikitos' Nitichevski <me@donnikitos.com> (https://donnikitos.com/)",
 	"license": "MIT",
