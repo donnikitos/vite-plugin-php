@@ -22,10 +22,11 @@ $source = str_replace(
 	$source,
 );
 
-die((function ($__SOURCE) {
+(function () {
 	try {
-		return eval("?> $__SOURCE <?php");
+		eval('?> ' . func_get_arg(0) . ' <?php');
+		die();
 	} catch (\Throwable $th) {
-		return $th->getMessage();
+		die($th->getMessage());
 	}
-})($source));
+})($source);
