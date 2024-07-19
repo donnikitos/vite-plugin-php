@@ -163,43 +163,54 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 										}).toString(),
 									);
 
-									const phpResult = await new Promise<string>(
-										(resolve, reject) => {
-											const chunks: Uint8Array[] = [];
+									const phpResult = await new Promise<{
+										statusCode: number | undefined;
+										headers: http.IncomingHttpHeaders;
+										content: string;
+									}>((resolve, reject) => {
+										const chunks: Uint8Array[] = [];
 
-											http.request(
-												url.toString(),
-												{
-													method: req.method,
-													headers: req.headers,
-												},
-												(msg) => {
-													msg.on('data', (data) =>
-														chunks.push(data),
-													);
+										http.request(
+											url.toString(),
+											{
+												method: req.method,
+												headers: req.headers,
+											},
+											(msg) => {
+												msg.on('data', (data) =>
+													chunks.push(data),
+												);
 
-													msg.on('end', () => {
-														const result =
-															Buffer.concat(
-																chunks,
-															).toString('utf8');
+												msg.on('end', () => {
+													const content =
+														Buffer.concat(
+															chunks,
+														).toString('utf8');
 
-														resolve(result);
+													resolve({
+														statusCode:
+															msg.statusCode,
+														headers: msg.headers,
+														content,
 													});
-												},
-											)
-												.on('error', reject)
-												.end();
-										},
-									);
+												});
+											},
+										)
+											.on('error', reject)
+											.end();
+									});
 
-									let out = phpResult.toString();
-									out = await server.transformIndexHtml(
+									const out = await server.transformIndexHtml(
 										entryPathname || '/',
-										out,
+										phpResult.content,
+										req.originalUrl,
 									);
 
-									res.end(out);
+									res.writeHead(phpResult.statusCode || 200, {
+										...req.headers,
+										...phpResult.headers,
+									}).end(out);
+
 									return;
 								}
 							}
