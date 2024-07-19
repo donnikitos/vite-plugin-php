@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-php",
-	"version": "1.0.20",
+	"version": "1.0.30",
 	"description": "Process PHP-files with the speed and tools of Vite",
 	"keywords": [
 		"vite",
@@ -12,6 +12,10 @@
 		"php",
 		"php-loader",
 		"php-compiler",
+		"php processing",
+		"php transpilation",
+		"php-vite",
+		"vite-php",
 		"loader",
 		"url rewrite",
 		"url router",

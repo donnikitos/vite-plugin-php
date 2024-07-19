@@ -18,7 +18,13 @@ export default defineConfig({
 Check out the [starter repo](https://github.com/nititech/php-vite-starter) for an easy and convenient start:
 <a href="https://github.com/nititech/php-vite-starter" target="_blank"><img src="https://nititech.de/kosmo-starter-button.png" alt="Starter Repo"></a>
 
-#### ⚡️⚡️⚡️ New feature: URL rewrite!
+## ⚡ Latest changes
+
+| Version | Feature                  |
+| ------- | ------------------------ |
+| 1.0.30  | PHP header forwarding    |
+| 1.0.20  | URL rewrites             |
+| 1.0.11  | Improved Windows support |
 
 ## Write some PHP code in your `index.php`
 
@@ -119,7 +125,7 @@ usePHP({
 });
 ```
 
-⚠️ **Attention:** If using the rewriteUrl property you will need to exclude (_return undefined_) assets like CSS, JavaScript, Images, etc.. on your own!
+⚠️ **Attention:** If using the rewriteUrl property you will need to exclude (_return undefined_) assets like CSS, JavaScript, Images, etc.., that match your transpiled php file names, on your own!
 
 ## Known issues
 
