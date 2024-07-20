@@ -1,18 +1,28 @@
 import { existsSync, readFileSync } from 'fs';
 import makeID from './makeID';
 import writeFile from './writeFile';
+import { ResolvedConfig } from 'vite';
+import initReplaceEnv from './replaceEnv';
 
-type CodeTokens = Record<string, string>;
+const phpTagPattern = /<\?(?:php|).+?(\?>|$)/gis;
 
-export function escapePHP(inputFile: string, outputFile: string) {
+type EscapePHPArgs = {
+	inputFile: string;
+	outputFile: string;
+	config: ResolvedConfig;
+};
+
+export function escapePHP({ inputFile, outputFile, config }: EscapePHPArgs) {
+	const replaceEnv = initReplaceEnv(config);
+
 	const input = readFileSync(inputFile).toString();
 
-	const codeTokens: CodeTokens = {};
+	const codeTokens: Record<string, string> = {};
 
 	const isJS = inputFile.includes('.js') || inputFile.includes('.ts');
 	const isML = inputFile.includes('.php') || inputFile.includes('.htm');
 
-	const out = input.replace(/<\?(?:php|).+?(\?>|$)/gis, (match) => {
+	const out = input.replace(phpTagPattern, (match) => {
 		let token = makeID();
 
 		if (isJS) {
@@ -21,7 +31,7 @@ export function escapePHP(inputFile: string, outputFile: string) {
 			token = `<!--${token}-->`;
 		}
 
-		codeTokens[token] = match;
+		codeTokens[token] = replaceEnv(match, inputFile);
 
 		return token;
 	});
@@ -30,7 +40,9 @@ export function escapePHP(inputFile: string, outputFile: string) {
 	writeFile(outputFile, out);
 }
 
-export function unescapePHP(file: string, tokensFile?: string) {
+type UnescapePHPArgs = { file: string; tokensFile?: string };
+
+export function unescapePHP({ file, tokensFile }: UnescapePHPArgs) {
 	const input = readFileSync(file).toString();
 	let out = input;
 

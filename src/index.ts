@@ -37,12 +37,8 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 	let entries = Array.isArray(entry) ? entry : [entry];
 
-	function escapeFile(file: string) {
-		const tempFile = `${tempDir}/${file}.html`;
-
-		escapePHP(file, tempFile);
-
-		return tempFile;
+	function getTempFileName(file: string) {
+		return `${tempDir}/${file}.html`;
 	}
 
 	function cleanupTemp(dir = '') {
@@ -91,7 +87,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					}),
 				);
 
-				const inputs = entries.map(escapeFile);
+				const inputs = entries.map(getTempFileName);
 
 				return {
 					build: {
@@ -102,6 +98,14 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			},
 			configResolved(_config) {
 				config = _config;
+
+				entries.forEach((entry) =>
+					escapePHP({
+						inputFile: entry,
+						outputFile: getTempFileName(entry),
+						config: config as ResolvedConfig,
+					}),
+				);
 			},
 		},
 		{
@@ -149,7 +153,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 							});
 
 							if (entry) {
-								const tempFile = `${tempDir}/${entry}.html`;
+								const tempFile = getTempFileName(entry);
 
 								if (existsSync(resolve(tempFile))) {
 									url.pathname = tempFile;
@@ -201,7 +205,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 									});
 
 									const out = await server.transformIndexHtml(
-										entryPathname || '/',
+										'/' + entryPathname,
 										phpResult.content,
 										req.originalUrl,
 									);
@@ -229,7 +233,11 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				);
 
 				if (entry) {
-					escapeFile(entry);
+					escapePHP({
+						inputFile: entry,
+						outputFile: getTempFileName(entry),
+						config: config as ResolvedConfig,
+					});
 
 					server.ws.send({
 						type: 'full-reload',
@@ -253,10 +261,12 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				const distDir = config?.build.outDir;
 
 				entries.forEach((file) => {
-					const code = unescapePHP(
-						`${distDir}/${tempDir}/${file}.html`,
-						`${tempDir}/${file}.html.json`,
-					);
+					const tempFileName = getTempFileName(file);
+
+					const code = unescapePHP({
+						file: `${distDir}/${tempFileName}`,
+						tokensFile: `${tempFileName}.json`,
+					});
 
 					writeFile(`${distDir}/${file}`, code);
 				});
