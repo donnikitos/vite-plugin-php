@@ -60,6 +60,7 @@
 	"devDependencies": {
 		"@types/node": "^20.14.11",
 		"fast-glob": "^3.3.2",
+		"picocolors": "^1.0.1",
 		"typescript": "^5.5.3",
 		"unbuild": "^2.0.0",
 		"vite": "^5.3.4"
