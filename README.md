@@ -20,12 +20,13 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 ## ⚡ Latest changes
 
-| Version | Feature                                                      |
-| ------- | ------------------------------------------------------------ |
-| 1.0.40  | Vite's "HTML Env Replacement" feature in transpiled PHP file |
-| 1.0.30  | Proper PHP header forwarding during development              |
-| 1.0.20  | URL rewrite functionality to mimic mod_rewrite & friends     |
-| 1.0.11  | Improved Windows support                                     |
+| Version | Feature                                                                               |
+| ------- | ------------------------------------------------------------------------------------- |
+| 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build |
+| 1.0.40  | Vite's "HTML Env Replacement" feature in transpiled PHP files                         |
+| 1.0.30  | Proper PHP header forwarding during development                                       |
+| 1.0.20  | URL rewrite functionality to mimic mod_rewrite & friends                              |
+| 1.0.11  | Improved Windows support                                                              |
 
 ## Write some PHP code in your `index.php`
 
