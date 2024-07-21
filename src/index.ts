@@ -1,5 +1,5 @@
 import { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
-import { existsSync, rmSync } from 'fs';
+import { existsSync, readFileSync, renameSync, rmSync } from 'fs';
 import { escapePHP, unescapePHP } from './utils/escapePHP';
 import { resolve } from 'path';
 import writeFile from './utils/writeFile';
@@ -41,10 +41,8 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		return `${tempDir}/${file}.html`;
 	}
 
-	function cleanupTemp(dir = '') {
-		const parentDir = dir ? dir + '/' : dir;
-
-		rmSync(parentDir + tempDir, { recursive: true, force: true });
+	function cleanupTemp() {
+		rmSync(tempDir, { recursive: true, force: true });
 	}
 
 	function onExit() {
@@ -78,22 +76,27 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					writeFile(gitIgnoreFile, '*\n**/*.php.html');
 				}
 
-				entries = entries.flatMap((entry) =>
-					fastGlob.globSync(entry, {
-						dot: true,
-						onlyFiles: true,
-						unique: true,
-						ignore: [tempDir, config.build?.outDir || 'dist'],
-					}),
-				);
-
-				const inputs = entries.map(getTempFileName);
+				entries = [
+					...new Set(
+						entries.flatMap((entry) =>
+							fastGlob.globSync(entry, {
+								dot: true,
+								onlyFiles: true,
+								unique: true,
+								ignore: [
+									tempDir,
+									config.build?.outDir || 'dist',
+								],
+							}),
+						),
+					),
+				];
 
 				return {
 					build: {
-						rollupOptions: { input: inputs },
+						rollupOptions: { input: entries },
 					},
-					optimizeDeps: { entries: inputs },
+					optimizeDeps: { entries },
 				};
 			},
 			configResolved(_config) {
@@ -250,28 +253,46 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			name: 'build-php',
 			apply: 'build',
 			resolveId(source, importer, options) {
-				if (
-					importer?.endsWith('.html') &&
-					importer.includes(`/${tempDir}/`)
-				) {
-					return { id: resolve(source) };
+				// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
+				if (entries.includes(source)) {
+					return {
+						id: `${source}.html`,
+						resolvedBy: 'vite-plugin-php',
+						meta: {
+							originalId: source,
+						},
+					};
+				}
+			},
+			load(id, options) {
+				const entry = this.getModuleInfo(id)?.meta.originalId;
+
+				if (entry) {
+					return {
+						code: readFileSync(getTempFileName(entry), 'utf-8'),
+					};
 				}
 			},
 			closeBundle() {
 				const distDir = config?.build.outDir;
 
 				entries.forEach((file) => {
-					const tempFileName = getTempFileName(file);
+					const escapedFile = `${distDir}/${file}.html`;
+
+					if (!existsSync(escapedFile)) {
+						return;
+					}
 
 					const code = unescapePHP({
-						file: `${distDir}/${tempFileName}`,
-						tokensFile: `${tempFileName}.json`,
+						file: escapedFile,
+						tokensFile: `${getTempFileName(file)}.json`,
 					});
 
-					writeFile(`${distDir}/${file}`, code);
+					writeFile(escapedFile, code);
+					renameSync(escapedFile, `${distDir}/${file}`);
 				});
 
-				cleanupTemp(distDir);
+				cleanupTemp();
 			},
 		},
 	];
