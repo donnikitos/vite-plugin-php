@@ -6,6 +6,7 @@ import writeFile from './utils/writeFile';
 import http from 'http';
 import phpServer from './utils/phpServer';
 import fastGlob from 'fast-glob';
+import consoleHijack from './utils/consoleHijack';
 
 const internalParam = '__314159265359__';
 
@@ -91,6 +92,8 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 						),
 					),
 				];
+
+				consoleHijack(entries);
 
 				return {
 					build: {
