@@ -15,7 +15,7 @@ type EscapePHPArgs = {
 export function escapePHP({ inputFile, outputFile, config }: EscapePHPArgs) {
 	const replaceEnv = initReplaceEnv(config);
 
-	const input = readFileSync(inputFile).toString();
+	const input = readFileSync(inputFile, 'utf-8').toString();
 
 	const codeTokens: Record<string, string> = {};
 
@@ -43,12 +43,14 @@ export function escapePHP({ inputFile, outputFile, config }: EscapePHPArgs) {
 type UnescapePHPArgs = { file: string; tokensFile?: string };
 
 export function unescapePHP({ file, tokensFile }: UnescapePHPArgs) {
-	const input = readFileSync(file).toString();
+	const input = readFileSync(file, 'utf-8').toString();
 	let out = input;
 
 	const tknsFile = tokensFile || file + '.json';
 	if (existsSync(tknsFile)) {
-		const codeTokens = JSON.parse(readFileSync(tknsFile).toString());
+		const codeTokens = JSON.parse(
+			readFileSync(tknsFile, 'utf-8').toString(),
+		);
 
 		Object.entries(codeTokens).forEach(([token, code]) => {
 			out = out.replace(token, (match) => {
