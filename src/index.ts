@@ -1,5 +1,5 @@
 import { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
-import { existsSync, readFileSync, renameSync, rmSync } from 'fs';
+import { existsSync, rmSync } from 'fs';
 import { escapePHP, unescapePHP } from './utils/escapePHP';
 import { resolve } from 'path';
 import writeFile from './utils/writeFile';
@@ -101,20 +101,24 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			},
 			configResolved(_config) {
 				config = _config;
-
-				entries.forEach((entry) =>
-					escapePHP({
-						inputFile: entry,
-						outputFile: getTempFileName(entry),
-						config: config as ResolvedConfig,
-					}),
-				);
 			},
 		},
 		{
 			name: 'serve-php',
 			apply: 'serve',
 			enforce: 'pre',
+			configResolved(_config) {
+				config = _config;
+
+				entries.forEach((entry) => {
+					const outputFile = getTempFileName(entry);
+
+					escapePHP({
+						inputFile: entry,
+						config: config as ResolvedConfig,
+					}).write(outputFile);
+				});
+			},
 			configureServer(server) {
 				viteServer = server;
 
@@ -231,16 +235,16 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			},
 			handleHotUpdate({ server, file }) {
 				const entry = entries.find(
-					(entryFile) =>
-						file.endsWith(entryFile) && resolve(entryFile) === file,
+					(entryFile) => resolve(entryFile) === file,
 				);
 
 				if (entry) {
+					const outputFile = getTempFileName(entry);
+
 					escapePHP({
 						inputFile: entry,
-						outputFile: getTempFileName(entry),
 						config: config as ResolvedConfig,
-					});
+					}).write(outputFile);
 
 					server.ws.send({
 						type: 'full-reload',
@@ -252,6 +256,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		{
 			name: 'build-php',
 			apply: 'build',
+			enforce: 'pre',
 			resolveId(source, importer, options) {
 				// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
 				if (entries.includes(source)) {
@@ -268,31 +273,37 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				const entry = this.getModuleInfo(id)?.meta.originalId;
 
 				if (entry) {
+					const { escapedCode, phpCodes } = escapePHP({
+						inputFile: entry,
+						config: config!,
+					});
+
 					return {
-						code: readFileSync(getTempFileName(entry), 'utf-8'),
+						code: escapedCode,
+						meta: { phpCodes },
 					};
 				}
 			},
-			closeBundle() {
-				const distDir = config?.build.outDir;
+			generateBundle: {
+				order: 'post',
+				handler(options, bundle, isWrite) {
+					Object.entries(bundle).forEach(([key, item]) => {
+						if (item.type === 'asset') {
+							const meta = this.getModuleInfo(
+								item.fileName,
+							)?.meta;
 
-				entries.forEach((file) => {
-					const escapedFile = `${distDir}/${file}.html`;
+							if (meta?.originalId && meta?.phpCodes) {
+								item.fileName = meta.originalId;
 
-					if (!existsSync(escapedFile)) {
-						return;
-					}
-
-					const code = unescapePHP({
-						file: escapedFile,
-						tokensFile: `${getTempFileName(file)}.json`,
+								item.source = unescapePHP({
+									escapedCode: item.source.toString(),
+									phpCodes: meta.phpCodes,
+								});
+							}
+						}
 					});
-
-					writeFile(escapedFile, code);
-					renameSync(escapedFile, `${distDir}/${file}`);
-				});
-
-				cleanupTemp();
+				},
 			},
 		},
 	];

@@ -1,28 +1,27 @@
-import { existsSync, readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import makeID from './makeID';
-import writeFile from './writeFile';
 import { ResolvedConfig } from 'vite';
 import initReplaceEnv from './replaceEnv';
+import writeFile from './writeFile';
 
 const phpTagPattern = /<\?(?:php|).+?(\?>|$)/gis;
 
 type EscapePHPArgs = {
 	inputFile: string;
-	outputFile: string;
 	config: ResolvedConfig;
 };
 
-export function escapePHP({ inputFile, outputFile, config }: EscapePHPArgs) {
+export function escapePHP({ inputFile, config }: EscapePHPArgs) {
 	const replaceEnv = initReplaceEnv(config);
 
 	const input = readFileSync(inputFile, 'utf-8').toString();
 
-	const codeTokens: Record<string, string> = {};
+	const phpCodes: Record<string, string> = {};
 
 	const isJS = inputFile.includes('.js') || inputFile.includes('.ts');
 	const isML = inputFile.includes('.php') || inputFile.includes('.htm');
 
-	const out = input.replace(phpTagPattern, (match) => {
+	const escapedCode = input.replace(phpTagPattern, (match) => {
 		let token = makeID();
 
 		if (isJS) {
@@ -31,33 +30,34 @@ export function escapePHP({ inputFile, outputFile, config }: EscapePHPArgs) {
 			token = `<!--${token}-->`;
 		}
 
-		codeTokens[token] = replaceEnv(match, inputFile);
+		phpCodes[token] = replaceEnv(match, inputFile);
 
 		return token;
 	});
 
-	writeFile(outputFile + '.json', JSON.stringify(codeTokens));
-	writeFile(outputFile, out);
+	return {
+		escapedCode,
+		phpCodes,
+		write(outputFile: string) {
+			writeFile(outputFile, escapedCode);
+			writeFile(outputFile + '.json', JSON.stringify(phpCodes));
+		},
+	} as const;
 }
 
-type UnescapePHPArgs = { file: string; tokensFile?: string };
+type UnescapePHPArgs = {
+	escapedCode: string;
+	phpCodes: Record<string, string>;
+};
 
-export function unescapePHP({ file, tokensFile }: UnescapePHPArgs) {
-	const input = readFileSync(file, 'utf-8').toString();
-	let out = input;
+export function unescapePHP({ escapedCode, phpCodes }: UnescapePHPArgs) {
+	let out = escapedCode;
 
-	const tknsFile = tokensFile || file + '.json';
-	if (existsSync(tknsFile)) {
-		const codeTokens = JSON.parse(
-			readFileSync(tknsFile, 'utf-8').toString(),
-		);
-
-		Object.entries(codeTokens).forEach(([token, code]) => {
-			out = out.replace(token, (match) => {
-				return `${code}`;
-			});
+	Object.entries(phpCodes).forEach(([token, code]) => {
+		out = out.replace(token, (match) => {
+			return `${code}`;
 		});
-	}
+	});
 
 	return out;
 }
