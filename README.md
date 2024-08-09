@@ -22,6 +22,7 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                               |
 | ------- | ------------------------------------------------------------------------------------- |
+| 1.0.55  | Auto close last PHP tag if not close (usually PHP only files)                         |
 | 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build |
 | 1.0.40  | Vite's "HTML Env Replacement" feature in transpiled PHP files                         |
 | 1.0.30  | Proper PHP header forwarding during development                                       |
