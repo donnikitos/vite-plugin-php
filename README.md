@@ -22,6 +22,7 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                               |
 | ------- | ------------------------------------------------------------------------------------- |
+| 1.1.00  | Files containing `.php` in filename are served via PHP server                         |
 | 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build |
 | 1.0.40  | Vite's "HTML Env Replacement" feature in transpiled PHP files                         |
 | 1.0.30  | Proper PHP header forwarding during development                                       |
@@ -89,7 +90,7 @@ Should you have multiple entry-points, you will be able to access each one accor
 | shop/index.php    | `/shop/` `/shop/index.php`            | `shop/index.php`    |
 | ...               | ...                                   | ...                 |
 
-Since version 1.0.6 you can specify wildcard entry points:
+Since version _1.0.6_ you can specify wildcard entry points:
 
 ```js
 usePHP({
@@ -105,6 +106,8 @@ usePHP({
 ```
 
 These entries will also render according to the routing table above.
+
+⚠️ **Attention:** Since version _1.1.00_ you can access untranspiled PHP-files, that are not in your `entry` property, during development. One condition is, that the filename has to contain `.php`. This is useful to have a routing script for example (use the `rewriteUrl()` property for that). Keep in mind that these files will not be transpiled and that you need to copy them for the build on your own.
 
 ##### Rewrite urls
 
