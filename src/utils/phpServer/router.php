@@ -14,13 +14,23 @@ $_SERVER['SCRIPT_FILENAME'] = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'
 $_SERVER['QUERY_STRING'] = http_build_query($_GET);
 
 $source = file_get_contents($sourceFile);
-$codeTokens = json_decode(file_get_contents("$sourceFile.json"), true);
 
-$source = str_replace(
-	array_keys($codeTokens),
-	array_values($codeTokens),
-	$source,
-);
+$tokensFile = "$sourceFile.json";
+if (file_exists($tokensFile)) {
+	$codeTokens = json_decode(file_get_contents($tokensFile), true);
+
+	$source = str_replace(
+		array_keys($codeTokens),
+		array_values($codeTokens),
+		$source,
+	);
+}
+
+preg_match('#<\?((?!\?>).)*$#s', $source, $matches);
+
+if (count($matches)) {
+	$source .= ' ?>';
+}
 
 (function () {
 	try {
