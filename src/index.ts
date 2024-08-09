@@ -136,9 +136,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 							)
 						) {
 							const url = new URL(req.url, 'http://localhost');
-							if (config?.server.port) {
-								url.port = config.server.port.toString();
-							}
+							url.port = phpServer.port.toString();
 							const requestUrl = url.pathname;
 
 							if (url.pathname.endsWith('/')) {
@@ -162,71 +160,71 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 								);
 							});
 
-							if (entry) {
-								const tempFile = getTempFileName(entry);
+							if (entryPathname.includes('.php') || entry) {
+								if (entry) {
+									const tempFile = getTempFileName(entry);
 
-								if (existsSync(resolve(tempFile))) {
-									url.pathname = tempFile;
-									url.port = phpServer.port.toString();
-
-									url.searchParams.set(
-										internalParam,
-										new URLSearchParams({
-											REQUEST_URI: requestUrl,
-											PHP_SELF: '/' + entry,
-										}).toString(),
-									);
-
-									const phpResult = await new Promise<{
-										statusCode: number | undefined;
-										headers: http.IncomingHttpHeaders;
-										content: string;
-									}>((resolve, reject) => {
-										const chunks: Uint8Array[] = [];
-
-										http.request(
-											url.toString(),
-											{
-												method: req.method,
-												headers: req.headers,
-											},
-											(msg) => {
-												msg.on('data', (data) =>
-													chunks.push(data),
-												);
-
-												msg.on('end', () => {
-													const content =
-														Buffer.concat(
-															chunks,
-														).toString('utf8');
-
-													resolve({
-														statusCode:
-															msg.statusCode,
-														headers: msg.headers,
-														content,
-													});
-												});
-											},
-										)
-											.on('error', reject)
-											.end();
-									});
-
-									const out = await server.transformIndexHtml(
-										'/' + entryPathname,
-										phpResult.content,
-										req.originalUrl,
-									);
-
-									res.writeHead(phpResult.statusCode || 200, {
-										...req.headers,
-										...phpResult.headers,
-									}).end(out);
-
-									return;
+									if (existsSync(resolve(tempFile))) {
+										url.pathname = tempFile;
+									}
 								}
+
+								url.searchParams.set(
+									internalParam,
+									new URLSearchParams({
+										REQUEST_URI: requestUrl,
+										PHP_SELF: '/' + entry,
+									}).toString(),
+								);
+
+								const phpResult = await new Promise<{
+									statusCode: number | undefined;
+									headers: http.IncomingHttpHeaders;
+									content: string;
+								}>((resolve, reject) => {
+									const chunks: Uint8Array[] = [];
+
+									http.request(
+										url.toString(),
+										{
+											method: req.method,
+											headers: req.headers,
+										},
+										(msg) => {
+											msg.on('data', (data) =>
+												chunks.push(data),
+											);
+
+											msg.on('end', () => {
+												const content =
+													Buffer.concat(
+														chunks,
+													).toString('utf8');
+
+												resolve({
+													statusCode: msg.statusCode,
+													headers: msg.headers,
+													content,
+												});
+											});
+										},
+									)
+										.on('error', reject)
+										.end();
+								});
+
+								const out = await server.transformIndexHtml(
+									'/' + entryPathname,
+									phpResult.content,
+									req.originalUrl,
+								);
+
+								res.writeHead(phpResult.statusCode || 200, {
+									...req.headers,
+									...phpResult.headers,
+								}).end(out);
+
+								return;
 							}
 						}
 					} catch (error) {
