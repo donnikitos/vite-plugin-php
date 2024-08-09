@@ -6,6 +6,7 @@ import writeFile from './utils/writeFile';
 import http from 'http';
 import phpServer from './utils/phpServer';
 import fastGlob from 'fast-glob';
+import consoleHijack from './utils/consoleHijack';
 
 const internalParam = '__314159265359__';
 
@@ -41,10 +42,8 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		return `${tempDir}/${file}.html`;
 	}
 
-	function cleanupTemp(dir = '') {
-		const parentDir = dir ? dir + '/' : dir;
-
-		rmSync(parentDir + tempDir, { recursive: true, force: true });
+	function cleanupTemp() {
+		rmSync(tempDir, { recursive: true, force: true });
 	}
 
 	function onExit() {
@@ -78,40 +77,51 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					writeFile(gitIgnoreFile, '*\n**/*.php.html');
 				}
 
-				entries = entries.flatMap((entry) =>
-					fastGlob.globSync(entry, {
-						dot: true,
-						onlyFiles: true,
-						unique: true,
-						ignore: [tempDir, config.build?.outDir || 'dist'],
-					}),
-				);
+				entries = [
+					...new Set(
+						entries.flatMap((entry) =>
+							fastGlob.globSync(entry, {
+								dot: true,
+								onlyFiles: true,
+								unique: true,
+								ignore: [
+									tempDir,
+									config.build?.outDir || 'dist',
+								],
+							}),
+						),
+					),
+				];
 
-				const inputs = entries.map(getTempFileName);
+				consoleHijack(entries);
 
 				return {
 					build: {
-						rollupOptions: { input: inputs },
+						rollupOptions: { input: entries },
 					},
-					optimizeDeps: { entries: inputs },
+					optimizeDeps: { entries },
 				};
 			},
 			configResolved(_config) {
 				config = _config;
-
-				entries.forEach((entry) =>
-					escapePHP({
-						inputFile: entry,
-						outputFile: getTempFileName(entry),
-						config: config as ResolvedConfig,
-					}),
-				);
 			},
 		},
 		{
 			name: 'serve-php',
 			apply: 'serve',
 			enforce: 'pre',
+			configResolved(_config) {
+				config = _config;
+
+				entries.forEach((entry) => {
+					const outputFile = getTempFileName(entry);
+
+					escapePHP({
+						inputFile: entry,
+						config: config as ResolvedConfig,
+					}).write(outputFile);
+				});
+			},
 			configureServer(server) {
 				viteServer = server;
 
@@ -228,16 +238,16 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			},
 			handleHotUpdate({ server, file }) {
 				const entry = entries.find(
-					(entryFile) =>
-						file.endsWith(entryFile) && resolve(entryFile) === file,
+					(entryFile) => resolve(entryFile) === file,
 				);
 
 				if (entry) {
+					const outputFile = getTempFileName(entry);
+
 					escapePHP({
 						inputFile: entry,
-						outputFile: getTempFileName(entry),
 						config: config as ResolvedConfig,
-					});
+					}).write(outputFile);
 
 					server.ws.send({
 						type: 'full-reload',
@@ -249,29 +259,54 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		{
 			name: 'build-php',
 			apply: 'build',
+			enforce: 'pre',
 			resolveId(source, importer, options) {
-				if (
-					importer?.endsWith('.html') &&
-					importer.includes(`/${tempDir}/`)
-				) {
-					return { id: resolve(source) };
+				// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
+				if (entries.includes(source)) {
+					return {
+						id: `${source}.html`,
+						resolvedBy: 'vite-plugin-php',
+						meta: {
+							originalId: source,
+						},
+					};
 				}
 			},
-			closeBundle() {
-				const distDir = config?.build.outDir;
+			load(id, options) {
+				const entry = this.getModuleInfo(id)?.meta.originalId;
 
-				entries.forEach((file) => {
-					const tempFileName = getTempFileName(file);
-
-					const code = unescapePHP({
-						file: `${distDir}/${tempFileName}`,
-						tokensFile: `${tempFileName}.json`,
+				if (entry) {
+					const { escapedCode, phpCodes } = escapePHP({
+						inputFile: entry,
+						config: config!,
 					});
 
-					writeFile(`${distDir}/${file}`, code);
-				});
+					return {
+						code: escapedCode,
+						meta: { phpCodes },
+					};
+				}
+			},
+			generateBundle: {
+				order: 'post',
+				handler(options, bundle, isWrite) {
+					Object.entries(bundle).forEach(([key, item]) => {
+						if (item.type === 'asset') {
+							const meta = this.getModuleInfo(
+								item.fileName,
+							)?.meta;
 
-				cleanupTemp(distDir);
+							if (meta?.originalId && meta?.phpCodes) {
+								item.fileName = meta.originalId;
+
+								item.source = unescapePHP({
+									escapedCode: item.source.toString(),
+									phpCodes: meta.phpCodes,
+								});
+							}
+						}
+					});
+				},
 			},
 		},
 	];
