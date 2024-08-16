@@ -131,7 +131,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					try {
 						if (
 							req.url &&
-							!['/@vite', '/@fs'].some((path) =>
+							!['/@vite', '/@fs', '/@id/__x00__'].some((path) =>
 								req.url!.startsWith(path),
 							)
 						) {
@@ -215,9 +215,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 									});
 
 									const out = await server.transformIndexHtml(
-										'/' + entryPathname,
+										requestUrl,
 										phpResult.content,
-										req.originalUrl,
+										'/' + entryPathname,
 									);
 
 									res.writeHead(phpResult.statusCode || 200, {
@@ -236,7 +236,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					next();
 				});
 			},
-			handleHotUpdate({ server, file }) {
+			async handleHotUpdate({ server, file }) {
 				const entry = entries.find(
 					(entryFile) => resolve(entryFile) === file,
 				);
@@ -249,9 +249,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 						config: config as ResolvedConfig,
 					}).write(outputFile);
 
+					server.moduleGraph.invalidateAll();
 					server.ws.send({
 						type: 'full-reload',
-						path: '*',
 					});
 				}
 			},
