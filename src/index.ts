@@ -250,6 +250,13 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					}).write(outputFile);
 
 					server.moduleGraph.invalidateAll();
+				}
+
+				if (
+					entry ||
+					(!file.startsWith(resolve(tempDir)) &&
+						file.includes('.php'))
+				) {
 					server.ws.send({
 						type: 'full-reload',
 					});
