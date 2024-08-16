@@ -20,14 +20,15 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 ## ⚡ Latest changes
 
-| Version | Feature                                                                               |
-| ------- | ------------------------------------------------------------------------------------- |
-| 1.0.55  | Auto close last PHP tag if not close (usually PHP only files)                         |
-| 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build |
-| 1.0.40  | Vite's "HTML Env Replacement" feature in transpiled PHP files                         |
-| 1.0.30  | Proper PHP header forwarding during development                                       |
-| 1.0.20  | URL rewrite functionality to mimic mod_rewrite & friends                              |
-| 1.0.11  | Improved Windows support                                                              |
+| Version | Feature                                                                                                     |
+| ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0.60  | Fixed inline module transpiling -> PHP code is being properly inserted into transpiled inline module chunks |
+| 1.0.55  | Fixed pure PHP file processing                                                                              |
+| 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build                       |
+| 1.0.40  | Vite's "HTML Env Replacement" feature in transpiled PHP files                                               |
+| 1.0.30  | Proper PHP header forwarding during development                                                             |
+| 1.0.20  | URL rewrite functionality to mimic mod_rewrite & friends                                                    |
+| 1.0.11  | Improved Windows support                                                                                    |
 
 ## Write some PHP code in your `index.php`
 
@@ -130,13 +131,35 @@ usePHP({
 
 ⚠️ **Attention:** If using the rewriteUrl property you will need to exclude (_return undefined_) assets like CSS, JavaScript, Images, etc.., that match your transpiled php file names, on your own!
 
-## Known issues
+## Specific oddities
+
+#### Inline modules
+
+⚠️ PHP will work somehow unintuitive in inlined modules.
+E.g. you have a page with some variables:
+
+```php
+<?php
+$var = 'foo';
+?>
+
+<script type="module">
+	console.log('<?=$var; ?>');
+</script>
+```
+
+This will not work. `$var` will be undefined in the module since the script is being transpiled into a separate file and included separately.
+Same applies to other server variables like `$_GET`, `$_POST` and so on - they will not have the same value as the main PHP file.
+
+#### Dynamically included asset processing
 
 Vite won't be able to process PHP-computed styles, scripts or images:
 
 ```php
 <script src="./src/<?='dynamic_script_name';?>.js" type="module"></script>
 ```
+
+## Issues
 
 If you encounter any other bugs or need some other features feel free to open an [issue](https://github.com/donnikitos/vite-plugin-php/issues).
 

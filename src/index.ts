@@ -131,7 +131,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					try {
 						if (
 							req.url &&
-							!['/@vite', '/@fs'].some((path) =>
+							!['/@vite', '/@fs', '/@id/__x00__'].some((path) =>
 								req.url!.startsWith(path),
 							)
 						) {
@@ -215,9 +215,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 									});
 
 									const out = await server.transformIndexHtml(
-										'/' + entryPathname,
+										requestUrl,
 										phpResult.content,
-										req.originalUrl,
+										'/' + entryPathname,
 									);
 
 									res.writeHead(phpResult.statusCode || 200, {
@@ -236,7 +236,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					next();
 				});
 			},
-			handleHotUpdate({ server, file }) {
+			async handleHotUpdate({ server, file }) {
 				const entry = entries.find(
 					(entryFile) => resolve(entryFile) === file,
 				);
@@ -249,9 +249,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 						config: config as ResolvedConfig,
 					}).write(outputFile);
 
+					server.moduleGraph.invalidateAll();
 					server.ws.send({
 						type: 'full-reload',
-						path: '*',
 					});
 				}
 			},
@@ -261,9 +261,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			apply: 'build',
 			enforce: 'pre',
 			resolveId(source, importer, options) {
-				// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
 				if (entries.includes(source)) {
 					return {
+						// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
 						id: `${source}.html`,
 						resolvedBy: 'vite-plugin-php',
 						meta: {
@@ -301,6 +301,20 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 								item.source = unescapePHP({
 									escapedCode: item.source.toString(),
+									phpCodes: meta.phpCodes,
+								});
+							}
+						} else if (
+							item.type === 'chunk' &&
+							item.facadeModuleId
+						) {
+							const meta = this.getModuleInfo(
+								item.facadeModuleId,
+							)?.meta;
+
+							if (meta?.phpCodes) {
+								item.code = unescapePHP({
+									escapedCode: item.code,
 									phpCodes: meta.phpCodes,
 								});
 							}
