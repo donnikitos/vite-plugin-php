@@ -22,6 +22,7 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                                                     |
 | ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0.62  | HTML transforms are now only applied to HTML contents during dev                                            |
 | 1.0.60  | Fixed inline module transpiling -> PHP code is being properly inserted into transpiled inline module chunks |
 | 1.0.55  | Fixed pure PHP file processing                                                                              |
 | 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build                       |
