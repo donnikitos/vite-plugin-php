@@ -214,11 +214,19 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 											.end();
 									});
 
-									const out = await server.transformIndexHtml(
-										requestUrl,
-										phpResult.content,
-										'/' + entryPathname,
-									);
+									let out = phpResult.content;
+
+									if (
+										phpResult.headers[
+											'content-type'
+										]?.includes('html')
+									) {
+										out = await server.transformIndexHtml(
+											requestUrl,
+											out,
+											'/' + entryPathname,
+										);
+									}
 
 									res.writeHead(phpResult.statusCode || 200, {
 										...req.headers,
