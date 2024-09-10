@@ -3,7 +3,7 @@ import { existsSync, rmSync } from 'fs';
 import { escapePHP, unescapePHP } from './utils/escapePHP';
 import { resolve } from 'path';
 import writeFile from './utils/writeFile';
-import http, { IncomingHttpHeaders, IncomingMessage } from 'http';
+import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import phpServer from './utils/phpServer';
 import fastGlob from 'fast-glob';
 import consoleHijack from './utils/consoleHijack';
@@ -200,8 +200,6 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 										headers: http.IncomingHttpHeaders;
 										content: string;
 									}>(async (resolve, reject) => {
-										const headers = req.headers;
-										delete headers['content-length'];
 										const chunks: any[] = [];
 										let statusCode: IncomingMessage['statusCode'];
 										let incomingHeaders: IncomingHttpHeaders =
@@ -212,29 +210,31 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 												url.toString(),
 												{
 													method: req.method,
-													headers,
+													headers: req.headers,
 												},
 												(msg) => {
 													statusCode = msg.statusCode;
 													incomingHeaders =
 														msg.headers;
 
-													msg.on('data', (data) =>
-														chunks.push(data),
-													);
+													msg.on('data', (data) => {
+														chunks.push(data);
+													});
 												},
 											)
 											.on('error', (error) => {
 												reject(error);
 											})
 											.on('close', () => {
+												const content =
+													Buffer.concat(
+														chunks,
+													).toString('utf8');
+
 												resolve({
 													statusCode,
 													headers: incomingHeaders,
-													content:
-														Buffer.concat(
-															chunks,
-														).toString('utf8'),
+													content,
 												});
 											});
 
@@ -261,10 +261,10 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 										);
 									}
 
-									res.writeHead(phpResult.statusCode || 200, {
-										...req.headers,
-										...phpResult.headers,
-									}).end(out);
+									res.writeHead(
+										phpResult.statusCode || 200,
+										phpResult.headers,
+									).end(out);
 
 									return;
 								}
