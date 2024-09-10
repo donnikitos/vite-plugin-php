@@ -3,7 +3,7 @@ import { existsSync, rmSync } from 'fs';
 import { escapePHP, unescapePHP } from './utils/escapePHP';
 import { resolve } from 'path';
 import writeFile from './utils/writeFile';
-import http from 'http';
+import http, { IncomingHttpHeaders, IncomingMessage } from 'http';
 import phpServer from './utils/phpServer';
 import fastGlob from 'fast-glob';
 import consoleHijack from './utils/consoleHijack';
@@ -135,6 +135,13 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 								req.url!.startsWith(path),
 							)
 						) {
+							req.on('error', (error) => {
+								throw error;
+							});
+							res.on('error', (error) => {
+								throw error;
+							});
+
 							const url = new URL(req.url, 'http://localhost');
 							if (config?.server.port) {
 								url.port = config.server.port.toString();
@@ -177,41 +184,67 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 										}).toString(),
 									);
 
+									const body = await new Promise<Buffer>(
+										(resolve, reject) => {
+											let data: any[] = [];
+											req.on('data', (chunk) => {
+												data.push(chunk);
+											}).on('end', () => {
+												resolve(Buffer.concat(data));
+											});
+										},
+									);
+
 									const phpResult = await new Promise<{
 										statusCode: number | undefined;
 										headers: http.IncomingHttpHeaders;
 										content: string;
-									}>((resolve, reject) => {
-										const chunks: Uint8Array[] = [];
+									}>(async (resolve, reject) => {
+										const headers = req.headers;
+										delete headers['content-length'];
+										const chunks: any[] = [];
+										let statusCode: IncomingMessage['statusCode'];
+										let incomingHeaders: IncomingHttpHeaders =
+											{};
 
-										http.request(
-											url.toString(),
-											{
-												method: req.method,
-												headers: req.headers,
-											},
-											(msg) => {
-												msg.on('data', (data) =>
-													chunks.push(data),
-												);
+										const request = http
+											.request(
+												url.toString(),
+												{
+													method: req.method,
+													headers,
+												},
+												(msg) => {
+													statusCode = msg.statusCode;
+													incomingHeaders =
+														msg.headers;
 
-												msg.on('end', () => {
-													const content =
+													msg.on('data', (data) =>
+														chunks.push(data),
+													);
+												},
+											)
+											.on('error', (error) => {
+												reject(error);
+											})
+											.on('close', () => {
+												resolve({
+													statusCode,
+													headers: incomingHeaders,
+													content:
 														Buffer.concat(
 															chunks,
-														).toString('utf8');
-
-													resolve({
-														statusCode:
-															msg.statusCode,
-														headers: msg.headers,
-														content,
-													});
+														).toString('utf8'),
 												});
-											},
-										)
-											.on('error', reject)
-											.end();
+											});
+
+										request.write(body, (error) => {
+											if (error) {
+												reject(error);
+											}
+										});
+
+										request.end();
 									});
 
 									let out = phpResult.content;
@@ -238,7 +271,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 							}
 						}
 					} catch (error) {
-						console.error(`Error: ${error}`);
+						console.error('Vite-PHP Error: ' + error);
 					}
 
 					next();
