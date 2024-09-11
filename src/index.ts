@@ -210,7 +210,13 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 												url.toString(),
 												{
 													method: req.method,
-													headers: req.headers,
+													headers: {
+														...req.headers,
+														'content-length':
+															Buffer.byteLength(
+																body,
+															),
+													},
 												},
 												(msg) => {
 													statusCode = msg.statusCode;
