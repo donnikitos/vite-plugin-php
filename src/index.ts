@@ -131,9 +131,12 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					try {
 						if (
 							req.url &&
-							!['/@vite', '/@fs', '/@id/__x00__'].some((path) =>
-								req.url!.startsWith(path),
-							)
+							![
+								'/@vite',
+								'/@fs',
+								'/@id/__x00__',
+								'/node_modules',
+							].some((path) => req.url!.startsWith(path))
 						) {
 							req.on('error', (error) => {
 								throw error;
