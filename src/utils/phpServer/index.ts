@@ -28,7 +28,7 @@ function start(root: string) {
 
 function stop() {
 	if (globalThis.php) {
-		globalThis.php.stdin?.end();
+		globalThis.php.stdin?.destroy();
 		globalThis.php.stdout?.destroy();
 		globalThis.php.stderr?.destroy();
 

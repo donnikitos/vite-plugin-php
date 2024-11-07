@@ -288,7 +288,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			},
 			async handleHotUpdate({ server, file }) {
 				const entry = entries.find(
-					(entryFile) => resolve(entryFile) === file,
+					(entryFile) => resolve(entryFile) === resolve(file),
 				);
 
 				if (entry) {

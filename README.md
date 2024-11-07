@@ -22,6 +22,7 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                                                     |
 | ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0.66  | Fixed file monitoring on Windows                                                                            |
 | 1.0.65  | Fixed request body forwarding for all request methods                                                       |
 | 1.0.62  | HTML transforms are now only applied to HTML contents during dev                                            |
 | 1.0.60  | Fixed inline module transpiling -> PHP code is being properly inserted into transpiled inline module chunks |
