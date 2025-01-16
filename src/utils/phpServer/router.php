@@ -32,11 +32,18 @@ if (count($matches)) {
 	$source .= ' ?>';
 }
 
-(function () {
-	try {
-		eval('?> ' . func_get_arg(0) . ' <?php');
-		die();
-	} catch (\Throwable $th) {
-		die($th->getMessage());
+$includeFile = tempnam(sys_get_temp_dir(), 'TRANSPILED_SRC');
+register_shutdown_function(function ($file) {
+	if (file_exists($file)) {
+		unlink($file);
 	}
-})($source);
+}, $includeFile);
+file_put_contents($includeFile, $source);
+
+try {
+	(function () {
+		include(func_get_arg(0));
+	})($includeFile);
+} catch (\Throwable $th) {
+	print($th->getMessage());
+}
