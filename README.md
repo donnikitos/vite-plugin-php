@@ -22,6 +22,7 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                                                     |
 | ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0.68  | Improved transpiled code evaluation (removed native `eval()`)                                               |
 | 1.0.67  | Removed whitespaces from PHP responses in dev mode                                                          |
 | 1.0.66  | Fixed file monitoring on Windows                                                                            |
 | 1.0.65  | Fixed request body forwarding for all request methods                                                       |
