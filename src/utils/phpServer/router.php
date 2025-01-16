@@ -32,7 +32,7 @@ if (count($matches)) {
 	$source .= ' ?>';
 }
 
-$includeFile = tempnam(sys_get_temp_dir(), 'TRANSPILED_SRC');
+$includeFile = tempnam(sys_get_temp_dir(), 'vite-php');
 register_shutdown_function(function ($file) {
 	if (file_exists($file)) {
 		unlink($file);
