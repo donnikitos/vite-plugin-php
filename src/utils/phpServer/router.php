@@ -34,7 +34,7 @@ if (count($matches)) {
 
 (function () {
 	try {
-		eval('?> ' . func_get_arg(0) . ' <?php');
+		eval('?>' . func_get_arg(0) . '<?php');
 		die();
 	} catch (\Throwable $th) {
 		die($th->getMessage());

@@ -22,16 +22,14 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                                                     |
 | ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0.67  | Removed whitespaces from PHP responses in dev mode                                                          |
 | 1.0.66  | Fixed file monitoring on Windows                                                                            |
 | 1.0.65  | Fixed request body forwarding for all request methods                                                       |
 | 1.0.62  | HTML transforms are now only applied to HTML contents during dev                                            |
 | 1.0.60  | Fixed inline module transpiling -> PHP code is being properly inserted into transpiled inline module chunks |
 | 1.0.55  | Fixed pure PHP file processing                                                                              |
 | 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build                       |
-| 1.0.40  | Vite's "HTML Env Replacement" feature in transpiled PHP files                                               |
-| 1.0.30  | Proper PHP header forwarding during development                                                             |
-| 1.0.20  | URL rewrite functionality to mimic mod_rewrite & friends                                                    |
-| 1.0.11  | Improved Windows support                                                                                    |
+| ...     | ...                                                                                                         |
 
 ## Write some PHP code in your `index.php`
 
