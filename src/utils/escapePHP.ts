@@ -27,7 +27,7 @@ export function escapePHP({ inputFile, config }: EscapePHPArgs) {
 		if (isJS) {
 			token = `/*${token}*/`;
 		} else if (isML) {
-			token = `<!--${token}-->`;
+			token = `␀␀${token}␀␀`;
 		}
 
 		phpCodes[token] = replaceEnv(match, inputFile);
