@@ -13,6 +13,15 @@ $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
 $_SERVER['SCRIPT_FILENAME'] = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
 $_SERVER['QUERY_STRING'] = http_build_query($_GET);
 
+ini_set(
+	'include_path',
+	implode(PATH_SEPARATOR, [
+		dirname($_SERVER['SCRIPT_FILENAME']),
+		$_SERVER['DOCUMENT_ROOT'],
+		ini_get('include_path'),
+	]),
+);
+
 $source = file_get_contents($sourceFile);
 
 $tokensFile = "$sourceFile.json";

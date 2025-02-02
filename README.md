@@ -22,6 +22,7 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                                                     |
 | ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0.70  | Added include path override for relative PHP imports in dev mode                                            |
 | 1.0.69  | Using new token format to escape PHP in HTML                                                                |
 | 1.0.68  | Improved transpiled code evaluation (removed native `eval()`)                                               |
 | 1.0.67  | Removed whitespaces from PHP responses in dev mode                                                          |
