@@ -22,6 +22,7 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 
 | Version | Feature                                                                                                     |
 | ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1.0.71  | Fixed assets prepending for namespaced PHP-files                                                            |
 | 1.0.70  | Added include path override for relative PHP imports in dev mode                                            |
 | 1.0.69  | Using new token format to escape PHP in HTML                                                                |
 | 1.0.68  | Improved transpiled code evaluation (removed native `eval()`)                                               |
@@ -30,8 +31,6 @@ Check out the [starter repo](https://github.com/nititech/php-vite-starter) for a
 | 1.0.65  | Fixed request body forwarding for all request methods                                                       |
 | 1.0.62  | HTML transforms are now only applied to HTML contents during dev                                            |
 | 1.0.60  | Fixed inline module transpiling -> PHP code is being properly inserted into transpiled inline module chunks |
-| 1.0.55  | Fixed pure PHP file processing                                                                              |
-| 1.0.50  | Using native Rollup pipeline to generate bundle -> proper error messages during build                       |
 | ...     | ...                                                                                                         |
 
 ## Write some PHP code in your `index.php`
