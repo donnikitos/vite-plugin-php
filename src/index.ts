@@ -7,6 +7,7 @@ import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import phpServer from './utils/phpServer';
 import fastGlob from 'fast-glob';
 import consoleHijack from './utils/consoleHijack';
+import { processOutput } from './utils/processOutput';
 
 const internalParam = '__314159265359__';
 
@@ -360,6 +361,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 									escapedCode: item.source.toString(),
 									phpCodes: meta.phpCodes,
 								});
+								item.source = processOutput(item.source)
 							}
 						} else if (
 							item.type === 'chunk' &&
@@ -374,6 +376,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 									escapedCode: item.code,
 									phpCodes: meta.phpCodes,
 								});
+								item.code = processOutput(item.code);
 							}
 						}
 					});
