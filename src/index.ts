@@ -1,4 +1,4 @@
-import { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
+import { Plugin, ResolvedConfig } from 'vite';
 import { existsSync, rmSync } from 'fs';
 import { escapePHP, unescapePHP } from './utils/escapePHP';
 import { resolve } from 'path';
@@ -35,7 +35,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	phpServer.binary = binary;
 
 	let config: undefined | ResolvedConfig = undefined;
-	let viteServer: undefined | ViteDevServer = undefined;
+	let exited = false;
 
 	let entries = Array.isArray(entry) ? entry : [entry];
 
@@ -43,15 +43,16 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		return `${tempDir}/${file}.html`;
 	}
 
-	function cleanupTemp() {
-		rmSync(tempDir, { recursive: true, force: true });
-	}
-
 	function onExit() {
+		if (exited) {
+			return;
+		}
+		exited = true;
+
 		if (config?.command === 'serve') {
 			phpServer.stop();
 
-			devCleanup && cleanupTemp();
+			devCleanup && rmSync(tempDir, { recursive: true, force: true });
 		}
 
 		process.exit();
@@ -124,9 +125,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				});
 			},
 			configureServer(server) {
-				viteServer = server;
-
-				phpServer.start(viteServer?.config.root);
+				phpServer.start(server?.config.root);
 
 				server.middlewares.use(async (req, res, next) => {
 					try {
@@ -140,9 +139,6 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 							].some((path) => req.url!.startsWith(path))
 						) {
 							req.on('error', (error) => {
-								throw error;
-							});
-							res.on('error', (error) => {
 								throw error;
 							});
 
@@ -361,7 +357,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 									escapedCode: item.source.toString(),
 									phpCodes: meta.phpCodes,
 								});
-								item.source = processOutput(item.source)
+								item.source = processOutput(item.source);
 							}
 						} else if (
 							item.type === 'chunk' &&
