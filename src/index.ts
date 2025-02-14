@@ -11,6 +11,10 @@ import { processOutput } from './utils/processOutput';
 
 const internalParam = '__314159265359__';
 
+export const shared = {
+	config: undefined as undefined | ResolvedConfig,
+};
+
 type UsePHPConfig = {
 	binary?: string;
 	entry?: string | string[];
@@ -34,7 +38,6 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 	php.binary = binary;
 
-	let config: undefined | ResolvedConfig = undefined;
 	let exited = false;
 
 	let entries = Array.isArray(entry) ? entry : [entry];
@@ -49,7 +52,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		}
 		exited = true;
 
-		if (config?.command === 'serve') {
+		if (shared.config?.command === 'serve') {
 			php.stop();
 
 			devCleanup && rmSync(tempDir, { recursive: true, force: true });
@@ -105,7 +108,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				};
 			},
 			configResolved(_config) {
-				config = _config;
+				shared.config = _config;
 			},
 		},
 		{
@@ -113,15 +116,12 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			apply: 'serve',
 			enforce: 'pre',
 			configResolved(_config) {
-				config = _config;
+				shared.config = _config;
 
 				entries.forEach((entry) => {
 					const outputFile = getTempFileName(entry);
 
-					escapePHP({
-						inputFile: entry,
-						config: config as ResolvedConfig,
-					}).write(outputFile);
+					escapePHP(entry).write(outputFile);
 				});
 			},
 			configureServer(server) {
@@ -143,8 +143,8 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 							});
 
 							const url = new URL(req.url, 'http://localhost');
-							if (config?.server.port) {
-								url.port = config.server.port.toString();
+							if (shared.config?.server.port) {
+								url.port = shared.config.server.port.toString();
 							}
 							const requestUrl = url.pathname;
 
@@ -291,10 +291,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				if (entry) {
 					const outputFile = getTempFileName(entry);
 
-					escapePHP({
-						inputFile: entry,
-						config: config as ResolvedConfig,
-					}).write(outputFile);
+					escapePHP(entry).write(outputFile);
 
 					server.moduleGraph.invalidateAll();
 				}
@@ -330,10 +327,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				const entry = this.getModuleInfo(id)?.meta.originalId;
 
 				if (entry) {
-					const { escapedCode, phpCodes } = escapePHP({
-						inputFile: entry,
-						config: config!,
-					});
+					const { escapedCode, phpCodes } = escapePHP(entry);
 
 					return {
 						code: escapedCode,

@@ -1,18 +1,12 @@
 import { readFileSync } from 'fs';
 import makeID from './makeID';
-import { ResolvedConfig } from 'vite';
 import initReplaceEnv from './replaceEnv';
 import writeFile from './writeFile';
 
 const phpTagPattern = /<\?(?:php|).+?(\?>|$)/gis;
 
-type EscapePHPArgs = {
-	inputFile: string;
-	config: ResolvedConfig;
-};
-
-export function escapePHP({ inputFile, config }: EscapePHPArgs) {
-	const replaceEnv = initReplaceEnv(config);
+export function escapePHP(inputFile: string) {
+	const replaceEnv = initReplaceEnv();
 
 	const input = readFileSync(inputFile, 'utf-8').toString();
 
