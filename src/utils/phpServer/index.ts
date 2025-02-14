@@ -1,20 +1,28 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 
+const php = {
+	binary: 'php',
+	port: 65535,
+	process: undefined as undefined | ReturnType<typeof spawn>,
+	start,
+	stop,
+};
+
 function start(root: string) {
-	if (!globalThis.php?.pid) {
+	if (!php.process?.pid) {
 		const routerFileUrl = new URL('./router.php', import.meta.url);
 
-		globalThis.php = spawn(phpServer.binary, [
+		php.process = spawn(php.binary, [
 			'-S',
-			'localhost:' + phpServer.port,
+			'localhost:' + php.port,
 			'-t',
 			root,
 			fileURLToPath(routerFileUrl),
 		])
 			.once('spawn', () => {
 				console.log(
-					`PHP development server started (PID: ${globalThis.php?.pid})`,
+					`PHP development server started (PID: ${php.process?.pid})`,
 				);
 			})
 			.on('error', (error) => {
@@ -22,17 +30,20 @@ function start(root: string) {
 			})
 			.on('close', (code) => {
 				console.log(`PHP development server stopped (Code: ${code})`);
+			})
+			.on('exit', (code) => {
+				console.log(`PHP development server exited (Code: ${code})`);
 			});
 	}
 }
 
 function stop() {
-	if (globalThis.php) {
-		globalThis.php.stdin?.destroy();
-		globalThis.php.stdout?.destroy();
-		globalThis.php.stderr?.destroy();
+	if (php.process) {
+		php.process.stdin?.destroy();
+		php.process.stdout?.destroy();
+		php.process.stderr?.destroy();
 
-		if (globalThis.php.kill()) {
+		if (php.process.kill()) {
 			console.log('PHP development server killed');
 		} else {
 			console.error('Attention! Failed to kill PHP development server!');
@@ -40,11 +51,4 @@ function stop() {
 	}
 }
 
-const phpServer = {
-	binary: 'php',
-	port: 65535,
-	start,
-	stop,
-};
-
-export default phpServer;
+export default php;

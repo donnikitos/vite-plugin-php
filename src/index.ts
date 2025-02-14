@@ -4,7 +4,7 @@ import { escapePHP, unescapePHP } from './utils/escapePHP';
 import { resolve } from 'path';
 import writeFile from './utils/writeFile';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
-import phpServer from './utils/phpServer';
+import php from './utils/phpServer';
 import fastGlob from 'fast-glob';
 import consoleHijack from './utils/consoleHijack';
 import { processOutput } from './utils/processOutput';
@@ -32,7 +32,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	}: UsePHPConfig = cfg;
 	const { dev: devCleanup = true } = cleanup;
 
-	phpServer.binary = binary;
+	php.binary = binary;
 
 	let config: undefined | ResolvedConfig = undefined;
 	let exited = false;
@@ -50,7 +50,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		exited = true;
 
 		if (config?.command === 'serve') {
-			phpServer.stop();
+			php.stop();
 
 			devCleanup && rmSync(tempDir, { recursive: true, force: true });
 		}
@@ -125,7 +125,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				});
 			},
 			configureServer(server) {
-				phpServer.start(server?.config.root);
+				php.start(server?.config.root);
 
 				server.middlewares.use(async (req, res, next) => {
 					try {
@@ -174,7 +174,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 								if (existsSync(resolve(tempFile))) {
 									url.pathname = tempFile;
-									url.port = phpServer.port.toString();
+									url.port = php.port.toString();
 
 									url.searchParams.set(
 										internalParam,
