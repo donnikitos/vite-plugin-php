@@ -79,7 +79,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			config(config, env) {
 				const gitIgnoreFile = `${tempDir}/.gitignore`;
 				if (!existsSync(gitIgnoreFile)) {
-					writeFile(gitIgnoreFile, '*\n**/*.php.html');
+					writeFile(gitIgnoreFile, '*\r\n**/*');
 				}
 
 				entries = [
