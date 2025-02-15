@@ -1,5 +1,7 @@
-import { spawn } from 'child_process';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'url';
+import { internalParam } from '../..';
+import log from '../log';
 
 const php = {
 	binary: 'php',
@@ -21,19 +23,32 @@ function start(root: string) {
 			fileURLToPath(routerFileUrl),
 		])
 			.once('spawn', () => {
-				console.log(
-					`PHP development server started (PID: ${php.process?.pid})`,
-				);
+				log(`Development server started (PID: ${php.process?.pid})`);
 			})
 			.on('error', (error) => {
-				console.error('PHP dev-server error: ' + error.message);
+				log(`Development server error: ${error.message})`, {
+					type: 'error',
+				});
 			})
 			.on('close', (code) => {
-				console.log(`PHP development server stopped (Code: ${code})`);
+				log(`PHP development server stopped (Code: ${code})`);
 			})
 			.on('exit', (code) => {
-				console.log(`PHP development server exited (Code: ${code})`);
+				log(`PHP development server exited (Code: ${code})`);
 			});
+
+		php.process.stdout?.on('data', (data) => {
+			`${data}`
+				.trim()
+				.split('\r\n')
+				.forEach((line) => {
+					if (line.startsWith(internalParam + ':')) {
+						log.error(line.substring((internalParam + ':').length));
+					} else {
+						log(line);
+					}
+				});
+		});
 	}
 }
 
@@ -44,9 +59,11 @@ function stop() {
 		php.process.stderr?.destroy();
 
 		if (php.process.kill()) {
-			console.log('PHP development server killed');
+			log('PHP development server killed');
 		} else {
-			console.error('Attention! Failed to kill PHP development server!');
+			log('Attention! Failed to kill PHP development server!', {
+				type: 'error',
+			});
 		}
 	}
 }

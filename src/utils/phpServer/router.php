@@ -1,7 +1,36 @@
 <?php
+$internal_param = '__314159265359__';
+
+ini_set('log_errors', 0); // Disable logging
+ini_set( // Just in case: set to writable file
+	'error_log',
+	sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-' . getmypid() . '.log',
+);
+
+set_error_handler(function (
+	$code,
+	$message,
+	$file = null,
+	$line = 0,
+	$context = [],
+) use ($internal_param) {
+	file_put_contents(
+		'php://stdout',
+		"$internal_param:" . json_encode(
+			[
+				'code' => $code,
+				'message' => $message,
+				'file' => $file,
+				'line' => $line,
+				'context' => $context,
+			],
+			JSON_FORCE_OBJECT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+		) . "\r\n",
+	);
+}, E_ALL);
+
 $sourceFile = $_SERVER['SCRIPT_FILENAME'];
 
-$internal_param = '__314159265359__';
 parse_str($_GET[$internal_param], $internal_vars);
 
 foreach ($internal_vars as $key => $value) {

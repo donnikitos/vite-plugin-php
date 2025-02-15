@@ -44,11 +44,15 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		if (shared.viteConfig?.command === 'serve') {
 			php.stop();
 
-			devCleanup &&
+			if (devCleanup) {
+				shared.viteConfig.logger.info(
+					'Removing temporary PHP development files',
+				);
 				rmSync(resolve(shared.tempDir), {
 					recursive: true,
 					force: true,
 				});
+			}
 		}
 
 		process.exit();
