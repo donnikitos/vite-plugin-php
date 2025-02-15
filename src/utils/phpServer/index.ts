@@ -23,18 +23,12 @@ function start(root: string) {
 			fileURLToPath(routerFileUrl),
 		])
 			.once('spawn', () => {
-				log(`Development server started (PID: ${php.process?.pid})`);
+				log(`Server started (PID: ${php.process?.pid})`);
 			})
 			.on('error', (error) => {
-				log(`Development server error: ${error.message})`, {
+				log(`Server error: ${error.message})`, {
 					type: 'error',
 				});
-			})
-			.on('close', (code) => {
-				log(`PHP development server stopped (Code: ${code})`);
-			})
-			.on('exit', (code) => {
-				log(`PHP development server exited (Code: ${code})`);
 			});
 
 		php.process.stdout?.on('data', (data) => {
@@ -52,19 +46,28 @@ function start(root: string) {
 	}
 }
 
-function stop() {
+function stop(callBack: () => void) {
 	if (php.process) {
+		php.process.on('close', (code) => {
+			log('Ended with: ' + code);
+			php.process = undefined;
+
+			callBack();
+		});
+
 		php.process.stdin?.destroy();
 		php.process.stdout?.destroy();
 		php.process.stderr?.destroy();
 
 		if (php.process.kill()) {
-			log('PHP development server killed');
+			log('Shutting down');
 		} else {
-			log('Attention! Failed to kill PHP development server!', {
+			log('Failed to send SIGTERM', {
 				type: 'error',
 			});
 		}
+	} else {
+		callBack();
 	}
 }
 

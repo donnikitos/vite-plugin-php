@@ -1,5 +1,5 @@
 import { Plugin } from 'vite';
-import { rmSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import php from './utils/phpServer';
 import fastGlob from 'fast-glob';
@@ -7,6 +7,7 @@ import consoleHijack from './utils/consoleHijack';
 import servePlugin, { serve } from './plugins/serve';
 import buildPlugin from './plugins/build';
 import { shared } from './shared';
+import log from './utils/log';
 
 type UsePHPConfig = {
 	binary?: string;
@@ -27,28 +28,27 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	shared.entries = Array.isArray(entry) ? entry : [entry];
 	shared.tempDir = cfg.tempDir ?? shared.tempDir;
 
-	let exited = false;
-	function onExit() {
-		if (exited) {
-			return;
-		}
-		exited = true;
-
-		if (shared.viteConfig?.command === 'serve') {
-			php.stop();
-
-			if (devCleanup) {
-				shared.viteConfig.logger.info(
-					'Removing temporary PHP development files',
-				);
-				rmSync(resolve(shared.tempDir), {
-					recursive: true,
-					force: true,
-				});
-			}
+	function handleExit(signal: any) {
+		if (signal === 'SIGINT') {
+			console.log();
 		}
 
-		process.exit();
+		const tempDir = resolve(shared.tempDir);
+		if (devCleanup && existsSync(tempDir)) {
+			log('Removing temporary files');
+			rmSync(tempDir, {
+				recursive: true,
+				force: true,
+			});
+		}
+
+		if (php.process && shared.viteConfig?.command === 'serve') {
+			php.stop(() => {
+				process.exit();
+			});
+		} else {
+			process.exit();
+		}
 	}
 
 	[
@@ -59,7 +59,9 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		'uncaughtException',
 		'SIGTERM',
 	].forEach((eventType) => {
-		process.on(eventType, onExit.bind(null));
+		new Promise((resolve) => process.on(eventType, resolve)).then(
+			handleExit,
+		);
 	});
 
 	return [
