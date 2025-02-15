@@ -1,10 +1,13 @@
 import { Plugin, ResolvedConfig } from 'vite';
-import { rmSync } from 'fs';
+import { rmSync } from 'node:fs';
+import { resolve } from 'node:path';
 import php from './utils/phpServer';
 import fastGlob from 'fast-glob';
 import consoleHijack from './utils/consoleHijack';
 import servePlugin, { serve } from './plugins/serve';
 import buildPlugin from './plugins/build';
+
+export const internalParam = '__314159265359__';
 
 export const shared = {
 	viteConfig: undefined as undefined | ResolvedConfig,
@@ -42,7 +45,10 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			php.stop();
 
 			devCleanup &&
-				rmSync(shared.tempDir, { recursive: true, force: true });
+				rmSync(resolve(shared.tempDir), {
+					recursive: true,
+					force: true,
+				});
 		}
 
 		process.exit();

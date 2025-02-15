@@ -2,12 +2,10 @@ import { Plugin } from 'vite';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
-import { shared } from '..';
+import { shared, internalParam } from '..';
 import php from '../utils/phpServer';
 import writeFile from '../utils/writeFile';
 import { applyModsPHP } from '../utils/escapePHP';
-
-const internalParam = '__314159265359__';
 
 export const serve = {
 	rewriteUrl: (url: URL) => url as URL | undefined,
@@ -22,7 +20,7 @@ const servePlugin: Plugin = {
 	apply: 'serve',
 	enforce: 'post',
 	configResolved() {
-		const gitIgnoreFile = `${shared.tempDir}/.gitignore`;
+		const gitIgnoreFile = resolve(`${shared.tempDir}/.gitignore`);
 		if (!existsSync(gitIgnoreFile)) {
 			writeFile(gitIgnoreFile, '*\r\n**/*');
 		}
