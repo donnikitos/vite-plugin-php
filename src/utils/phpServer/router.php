@@ -16,43 +16,16 @@ $_SERVER['QUERY_STRING'] = http_build_query($_GET);
 ini_set(
 	'include_path',
 	implode(PATH_SEPARATOR, [
-		dirname($_SERVER['SCRIPT_FILENAME']),
+		dirname($sourceFile),
 		$_SERVER['DOCUMENT_ROOT'],
 		ini_get('include_path'),
 	]),
 );
 
-$source = file_get_contents($sourceFile);
-
-$tokensFile = "$sourceFile.json";
-if (file_exists($tokensFile)) {
-	$codeTokens = json_decode(file_get_contents($tokensFile), true);
-
-	$source = str_replace(
-		array_keys($codeTokens),
-		array_values($codeTokens),
-		$source,
-	);
-}
-
-preg_match('#<\?((?!\?>).)*$#s', $source, $matches);
-
-if (count($matches)) {
-	$source .= ' ?>';
-}
-
-$includeFile = tempnam(sys_get_temp_dir(), 'vite-php');
-register_shutdown_function(function ($file) {
-	if (file_exists($file)) {
-		unlink($file);
-	}
-}, $includeFile);
-file_put_contents($includeFile, $source);
-
 try {
 	(function () {
 		include(func_get_arg(0));
-	})($includeFile);
+	})($sourceFile);
 } catch (\Throwable $th) {
 	print($th->getMessage());
 }
