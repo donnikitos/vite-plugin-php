@@ -1,4 +1,8 @@
-function consoleHijack(entries: string[]) {
+import { shared } from '../shared';
+
+function consoleHijack() {
+	const entries = shared.entries;
+
 	(['log', 'info', 'warn', 'error'] as const).forEach((command) => {
 		const cx = console[command];
 

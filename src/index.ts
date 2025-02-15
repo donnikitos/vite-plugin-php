@@ -83,7 +83,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					),
 				];
 
-				consoleHijack(shared.entries);
+				consoleHijack();
 
 				return {
 					build: {
