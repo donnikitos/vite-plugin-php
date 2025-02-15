@@ -1,7 +1,7 @@
-import { relative } from 'path';
+import { relative } from 'node:path';
 import { normalizePath, UserConfig } from 'vite';
 import colors from 'picocolors';
-import { shared } from '..';
+import { shared } from '../shared';
 import { hasViteConfig } from './assert';
 
 // Taken from original Vite code: https://github.com/vitejs/vite/blob/2f7bf79bfc668fc260fb93fa705ce32ac7d1d665/packages/vite/src/node/env.ts#L75
@@ -26,7 +26,9 @@ function initReplaceEnv() {
 	hasViteConfig(shared.viteConfig);
 
 	const { env, define, root, logger } = shared.viteConfig;
-	const envPrefix = resolveEnvPrefix({ envPrefix: shared.viteConfig.envPrefix });
+	const envPrefix = resolveEnvPrefix({
+		envPrefix: shared.viteConfig.envPrefix,
+	});
 
 	// account for user env defines
 	for (const key in define) {

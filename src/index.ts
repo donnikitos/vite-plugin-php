@@ -1,4 +1,4 @@
-import { Plugin, ResolvedConfig } from 'vite';
+import { Plugin } from 'vite';
 import { rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import php from './utils/phpServer';
@@ -6,14 +6,7 @@ import fastGlob from 'fast-glob';
 import consoleHijack from './utils/consoleHijack';
 import servePlugin, { serve } from './plugins/serve';
 import buildPlugin from './plugins/build';
-
-export const internalParam = '__314159265359__';
-
-export const shared = {
-	viteConfig: undefined as undefined | ResolvedConfig,
-	entries: [] as string[],
-	tempDir: '.php-tmp',
-};
+import { shared } from './shared';
 
 type UsePHPConfig = {
 	binary?: string;

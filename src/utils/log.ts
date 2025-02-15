@@ -1,6 +1,6 @@
 import colors from 'picocolors';
 import { hasViteConfig } from './assert';
-import { shared } from '..';
+import { shared } from '../shared';
 import { EPHPError } from '../enums/php-error';
 import { LogType } from 'vite';
 import { resolve } from 'node:path';

@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import makeID from './makeID';
 import initReplaceEnv from './replaceEnv';
 import writeFile from './writeFile';

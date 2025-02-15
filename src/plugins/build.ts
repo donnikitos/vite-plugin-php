@@ -1,5 +1,5 @@
 import { Plugin } from 'vite';
-import { shared } from '..';
+import { shared } from '../shared';
 import { escapePHP, unescapePHP } from '../utils/escapePHP';
 import { processOutput } from '../utils/processOutput';
 

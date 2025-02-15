@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'url';
-import { internalParam } from '../..';
+import { internalParam } from '../../shared';
 import log from '../log';
 
 const php = {

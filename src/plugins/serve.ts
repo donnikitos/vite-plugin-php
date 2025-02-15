@@ -2,7 +2,7 @@ import { Plugin } from 'vite';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
-import { shared, internalParam } from '..';
+import { shared, internalParam } from '../shared';
 import php from '../utils/phpServer';
 import writeFile from '../utils/writeFile';
 import { applyModsPHP } from '../utils/escapePHP';
