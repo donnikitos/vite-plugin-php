@@ -5,7 +5,9 @@ $internal_param = '__314159265359__';
 parse_str($_GET[$internal_param], $internal_vars);
 
 foreach ($internal_vars as $key => $value) {
-	$_SERVER[$key] = $value;
+	if (str_starts_with($key, '$')) {
+		$_SERVER[substr($key, 1)] = $value;
+	}
 }
 unset($_GET[$internal_param]);
 
@@ -17,6 +19,8 @@ ini_set(
 	'include_path',
 	implode(PATH_SEPARATOR, [
 		dirname($sourceFile),
+		$_SERVER['DOCUMENT_ROOT'] . '/' . $internal_vars['temp_dir'],
+		dirname($_SERVER['SCRIPT_FILENAME']),
 		$_SERVER['DOCUMENT_ROOT'],
 		ini_get('include_path'),
 	]),

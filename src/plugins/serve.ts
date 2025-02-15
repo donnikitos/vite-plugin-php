@@ -85,8 +85,9 @@ const servePlugin: Plugin = {
 							url.searchParams.set(
 								internalParam,
 								new URLSearchParams({
-									REQUEST_URI: requestUrl,
-									PHP_SELF: '/' + entry,
+									$REQUEST_URI: requestUrl,
+									$PHP_SELF: '/' + entry,
+									temp_dir: shared.tempDir,
 								}).toString(),
 							);
 
