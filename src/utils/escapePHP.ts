@@ -5,10 +5,16 @@ import writeFile from './writeFile';
 
 const phpTagPattern = /<\?(?:php|).+?(\?>|$)/gis;
 
-export function escapePHP(inputFile: string) {
+export function applyModsPHP(inputFile: string) {
 	const replaceEnv = initReplaceEnv();
 
 	const input = readFileSync(inputFile, 'utf-8').toString();
+
+	return replaceEnv(input, inputFile);
+}
+
+export function escapePHP(inputFile: string) {
+	const input = applyModsPHP(inputFile);
 
 	const phpCodes: Record<string, string> = {};
 
@@ -24,7 +30,7 @@ export function escapePHP(inputFile: string) {
 			token = `␀␀${token}␀␀`;
 		}
 
-		phpCodes[token] = replaceEnv(match, inputFile);
+		phpCodes[token] = match;
 
 		return token;
 	});

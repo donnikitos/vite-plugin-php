@@ -23,10 +23,10 @@ function resolveEnvPrefix({ envPrefix = 'VITE_' }: UserConfig) {
 const envPattern = /%(\S+?)%/g;
 
 function initReplaceEnv() {
-	hasViteConfig(shared.config);
+	hasViteConfig(shared.viteConfig);
 
-	const { env, define, root, logger } = shared.config;
-	const envPrefix = resolveEnvPrefix({ envPrefix: shared.config.envPrefix });
+	const { env, define, root, logger } = shared.viteConfig;
+	const envPrefix = resolveEnvPrefix({ envPrefix: shared.viteConfig.envPrefix });
 
 	// account for user env defines
 	for (const key in define) {
