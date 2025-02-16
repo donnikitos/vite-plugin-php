@@ -1,6 +1,9 @@
 <?php
 $internal_param = '__314159265359__';
 
+parse_str($_GET[$internal_param], $internal_vars);
+unset($_GET[$internal_param]);
+
 ini_set('log_errors', 0); // Disable logging
 ini_set( // Just in case: set to writable file
 	'error_log',
@@ -27,18 +30,15 @@ set_error_handler(function (
 			JSON_FORCE_OBJECT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
 		) . "\r\n",
 	);
-}, E_ALL);
+}, $internal_vars['error_levels'] ?? E_ALL);
 
 $sourceFile = $_SERVER['SCRIPT_FILENAME'];
-
-parse_str($_GET[$internal_param], $internal_vars);
 
 foreach ($internal_vars as $key => $value) {
 	if (str_starts_with($key, '$')) {
 		$_SERVER[substr($key, 1)] = $value;
 	}
 }
-unset($_GET[$internal_param]);
 
 $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
 $_SERVER['SCRIPT_FILENAME'] = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];

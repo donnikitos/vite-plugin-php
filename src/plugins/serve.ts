@@ -86,6 +86,8 @@ const servePlugin: Plugin = {
 									$REQUEST_URI: requestUrl,
 									$PHP_SELF: '/' + entry,
 									temp_dir: shared.tempDir,
+									error_levels:
+										shared.devConfig.errorLevels.toString(),
 								}).toString(),
 							);
 

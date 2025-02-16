@@ -9,24 +9,30 @@ import buildPlugin from './plugins/build';
 import { shared } from './shared';
 import log from './utils/log';
 
-type UsePHPConfig = {
+export * from './enums/php-error';
+
+export type UsePHPConfig = {
 	binary?: string;
 	entry?: string | string[];
 	rewriteUrl?: (requestUrl: URL) => URL | undefined;
 	tempDir?: string;
-	cleanup?: {
-		dev?: boolean;
+	dev?: {
+		errorLevels?: number; // EPHPError
+		cleanup?: boolean;
 	};
 };
 
 function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	const { entry = 'index.php' } = cfg;
-	const { dev: devCleanup = true } = cfg.cleanup || {};
 
 	php.binary = cfg.binary ?? php.binary;
 	serve.rewriteUrl = cfg.rewriteUrl ?? serve.rewriteUrl;
 	shared.entries = Array.isArray(entry) ? entry : [entry];
 	shared.tempDir = cfg.tempDir ?? shared.tempDir;
+	shared.devConfig = {
+		cleanup: cfg.dev?.cleanup || shared.devConfig.cleanup,
+		errorLevels: cfg.dev?.errorLevels || shared.devConfig.errorLevels,
+	};
 
 	function handleExit(signal: any) {
 		if (signal === 'SIGINT') {
@@ -34,7 +40,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 		}
 
 		const tempDir = resolve(shared.tempDir);
-		if (devCleanup && existsSync(tempDir)) {
+		if (shared.devConfig.cleanup && existsSync(tempDir)) {
 			log('Removing temporary files');
 			rmSync(tempDir, {
 				recursive: true,
