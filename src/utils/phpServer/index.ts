@@ -32,12 +32,17 @@ function start(root: string) {
 			});
 
 		php.process.stdout?.on('data', (data) => {
+			log('', { timestamp: true });
+
 			`${data}`
 				.trim()
 				.split('\r\n')
 				.forEach((line) => {
 					if (line.startsWith(internalParam + ':')) {
-						log.error(line.substring((internalParam + ':').length));
+						log.error(
+							line.substring((internalParam + ':').length),
+							{ prefix: false },
+						);
 					} else {
 						log(line);
 					}

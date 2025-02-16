@@ -2,21 +2,29 @@ import colors from 'picocolors';
 import { hasViteConfig } from './assert';
 import { shared } from '../shared';
 import { EPHPError } from '../enums/php-error';
-import { LogType } from 'vite';
+import { LogErrorOptions, LogType } from 'vite';
 import { resolve } from 'node:path';
 
-type LogOptions = Partial<{ type: LogType }>;
+type LogOptions = Partial<
+	{ type: LogType; prefix?: boolean } & LogErrorOptions
+>;
 
-function log(message: string, { type = 'info' }: LogOptions = {}) {
+function log(
+	message: string,
+	{ type = 'info', prefix = true, ...options }: LogOptions = {},
+) {
 	hasViteConfig(shared.viteConfig);
 
-	let output = colors.bgMagenta(colors.white(' php ')) + ' ';
+	let output = '';
+	if (prefix) {
+		output += colors.bgMagenta(colors.white(' php ')) + ' ';
+	}
 	output += message;
 
-	shared.viteConfig.logger[type](output);
+	shared.viteConfig.logger[type](output, options);
 }
 
-log.error = function (json: string) {
+log.error = function (json: string, options: Omit<LogOptions, 'type'> = {}) {
 	let output = json;
 	let type: NonNullable<LogOptions['type']> = 'info';
 
@@ -69,7 +77,7 @@ log.error = function (json: string) {
 		output += '\tOn line: ' + data.line;
 	} catch (error) {}
 
-	log(output, { type });
+	log(output, { ...options, type });
 };
 
 export default log;
