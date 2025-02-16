@@ -1,11 +1,12 @@
 import { Plugin } from 'vite';
 import { resolve } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import { shared, internalParam } from '../shared';
 import php from '../utils/phpServer';
 import writeFile from '../utils/writeFile';
 import { applyModsPHP } from '../utils/escapePHP';
+import log from '../utils/log';
 
 export const serve = {
 	rewriteUrl: (url: URL) => url as URL | undefined,
@@ -20,6 +21,42 @@ const servePlugin: Plugin = {
 	apply: 'serve',
 	enforce: 'post',
 	configResolved() {
+		function handleExit(signal: any) {
+			if (signal === 'SIGINT') {
+				console.log();
+			}
+
+			const tempDir = resolve(shared.tempDir);
+			if (shared.devConfig.cleanup && existsSync(tempDir)) {
+				log('Removing temporary files');
+				rmSync(tempDir, {
+					recursive: true,
+					force: true,
+				});
+			}
+
+			if (php.process && shared.viteConfig?.command === 'serve') {
+				php.stop(() => {
+					process.exit();
+				});
+			} else {
+				process.exit();
+			}
+		}
+
+		[
+			'exit',
+			'SIGINT',
+			'SIGUSR1',
+			'SIGUSR2',
+			'uncaughtException',
+			'SIGTERM',
+		].forEach((eventType) => {
+			new Promise((resolve) => process.on(eventType, resolve)).then(
+				handleExit,
+			);
+		});
+
 		const gitIgnoreFile = resolve(`${shared.tempDir}/.gitignore`);
 		if (!existsSync(gitIgnoreFile)) {
 			writeFile(gitIgnoreFile, '*\r\n**/*');
