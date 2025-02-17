@@ -223,7 +223,7 @@ const servePlugin: Plugin = {
 			next();
 		});
 	},
-	async handleHotUpdate({ server, file }) {
+	handleHotUpdate({ server, file }) {
 		const entry = shared.entries.find(
 			(entryFile) => resolve(entryFile) === resolve(file),
 		);
