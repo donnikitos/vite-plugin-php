@@ -1,7 +1,7 @@
 import { Plugin } from 'vite';
 import { shared } from '../shared';
 import { escapePHP, unescapePHP } from '../utils/escapePHP';
-import { processOutput } from '../utils/processOutput';
+import { fixAssetsInjection } from '../utils/fixAssetsInjection';
 
 const buildPlugin: Plugin = {
 	name: 'build-php',
@@ -45,7 +45,7 @@ const buildPlugin: Plugin = {
 							escapedCode: item.source.toString(),
 							phpCodes: meta.phpCodes,
 						});
-						item.source = processOutput(item.source);
+						item.source = fixAssetsInjection(item.source);
 					}
 				} else if (item.type === 'chunk' && item.facadeModuleId) {
 					const meta = this.getModuleInfo(item.facadeModuleId)?.meta;
@@ -55,7 +55,7 @@ const buildPlugin: Plugin = {
 							escapedCode: item.code,
 							phpCodes: meta.phpCodes,
 						});
-						item.code = processOutput(item.code);
+						item.code = fixAssetsInjection(item.code);
 					}
 				}
 			});
