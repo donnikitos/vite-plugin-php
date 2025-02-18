@@ -4,8 +4,8 @@ import { existsSync, rmSync } from 'node:fs';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import { shared, internalParam } from '../shared';
 import php from '../utils/phpServer';
-import writeFile from '../utils/writeFile';
-import { applyModsPHP } from '../utils/escapePHP';
+import { writeFile } from '../utils/file';
+import PHP_Code from '../utils/PHP_Code';
 import log from '../utils/log';
 
 export const serve = {
@@ -63,7 +63,7 @@ const servePlugin: Plugin = {
 		}
 
 		shared.entries.forEach((entry) => {
-			writeFile(tempName(entry), applyModsPHP(entry));
+			PHP_Code.fromFile(entry).applyEnv().write(tempName(entry));
 		});
 	},
 	configureServer(server) {
@@ -229,7 +229,7 @@ const servePlugin: Plugin = {
 		);
 
 		if (entry) {
-			writeFile(tempName(entry), applyModsPHP(entry));
+			PHP_Code.fromFile(entry).applyEnv().write(tempName(entry));
 
 			server.moduleGraph.invalidateAll();
 		}

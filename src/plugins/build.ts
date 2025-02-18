@@ -1,6 +1,6 @@
 import { Plugin } from 'vite';
 import { shared } from '../shared';
-import { escapePHP, unescapePHP } from '../utils/escapePHP';
+import PHP_Code from '../utils/PHP_Code';
 import { fixAssetsInjection } from '../utils/fixAssetsInjection';
 
 const buildPlugin: Plugin = {
@@ -20,14 +20,15 @@ const buildPlugin: Plugin = {
 		}
 	},
 	load(id, options) {
-		const entry = this.getModuleInfo(id)?.meta.originalId;
+		const moduleInfo = this.getModuleInfo(id);
+		const entry = moduleInfo?.meta.originalId;
 
 		if (entry) {
-			const { escapedCode, phpCodes } = escapePHP(entry);
+			const php = PHP_Code.fromFile(entry).applyEnv().escape();
 
 			return {
-				code: escapedCode,
-				meta: { phpCodes },
+				code: php.code,
+				meta: { phpMapping: php.mapping },
 			};
 		}
 	},
@@ -36,25 +37,37 @@ const buildPlugin: Plugin = {
 		handler(options, bundle, isWrite) {
 			Object.entries(bundle).forEach(([key, item]) => {
 				if (item.type === 'asset') {
-					const meta = this.getModuleInfo(item.fileName)?.meta;
+					const moduleInfo = this.getModuleInfo(item.fileName);
 
-					if (meta?.originalId && meta?.phpCodes) {
+					if (moduleInfo?.meta.originalId) {
+						const meta = moduleInfo.meta;
+
 						item.fileName = meta.originalId;
 
-						item.source = unescapePHP({
-							escapedCode: item.source.toString(),
-							phpCodes: meta.phpCodes,
-						});
-						item.source = fixAssetsInjection(item.source);
+						if (meta.phpMapping) {
+							item.source = PHP_Code.unescape(
+								item.source.toString(),
+								meta.phpMapping,
+							);
+						}
+
+						item.source = fixAssetsInjection(
+							item.source.toString(),
+						);
 					}
 				} else if (item.type === 'chunk' && item.facadeModuleId) {
-					const meta = this.getModuleInfo(item.facadeModuleId)?.meta;
+					const moduleInfo = this.getModuleInfo(item.facadeModuleId);
 
-					if (meta?.phpCodes) {
-						item.code = unescapePHP({
-							escapedCode: item.code,
-							phpCodes: meta.phpCodes,
-						});
+					if (moduleInfo) {
+						const meta = moduleInfo.meta;
+
+						if (meta.phpMapping) {
+							item.code = PHP_Code.unescape(
+								item.code,
+								meta.phpMapping,
+							);
+						}
+
 						item.code = fixAssetsInjection(item.code);
 					}
 				}
