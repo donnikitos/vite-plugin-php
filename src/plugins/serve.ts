@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { existsSync, rmSync } from 'node:fs';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import { shared, internalParam } from '../shared';
-import php from '../utils/phpServer';
+import PHP_Server from '../utils/PHP_Server';
 import { writeFile } from '../utils/file';
 import PHP_Code from '../utils/PHP_Code';
 import log from '../utils/log';
@@ -35,8 +35,8 @@ const servePlugin: Plugin = {
 				});
 			}
 
-			if (php.process && shared.viteConfig?.command === 'serve') {
-				php.stop(() => {
+			if (PHP_Server.process && shared.viteConfig?.command === 'serve') {
+				PHP_Server.stop(() => {
 					process.exit();
 				});
 			} else {
@@ -67,8 +67,8 @@ const servePlugin: Plugin = {
 		});
 	},
 	configureServer(server) {
-		if (!php.process) {
-			php.start(server?.config.root);
+		if (!PHP_Server.process) {
+			PHP_Server.start(server?.config.root);
 		}
 
 		server.middlewares.use(async (req, res, next) => {
@@ -115,7 +115,7 @@ const servePlugin: Plugin = {
 
 						if (existsSync(resolve(tempFile))) {
 							url.pathname = tempFile;
-							url.port = php.port.toString();
+							url.port = PHP_Server.port.toString();
 
 							url.searchParams.set(
 								internalParam,

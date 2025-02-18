@@ -1,5 +1,5 @@
 import { Plugin } from 'vite';
-import php from './utils/phpServer';
+import PHP_Server from './utils/PHP_Server';
 import fastGlob from 'fast-glob';
 import consoleHijack from './utils/consoleHijack';
 import servePlugin, { serve } from './plugins/serve';
@@ -22,7 +22,7 @@ export type UsePHPConfig = {
 function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	const { entry = 'index.php' } = cfg;
 
-	php.binary = cfg.binary ?? php.binary;
+	PHP_Server.binary = cfg.binary ?? PHP_Server.binary;
 	serve.rewriteUrl = cfg.rewriteUrl ?? serve.rewriteUrl;
 	shared.entries = Array.isArray(entry) ? entry : [entry];
 	shared.tempDir = cfg.tempDir ?? shared.tempDir;

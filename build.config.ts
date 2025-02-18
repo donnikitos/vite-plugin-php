@@ -14,7 +14,7 @@ export default defineBuildConfig({
 	hooks: {
 		'build:done': (buildConfig) => {
 			cp(
-				resolve('./src/utils/phpServer/router.php'),
+				resolve('./src/utils/PHP_Server/router.php'),
 				buildConfig.options.outDir + '/router.php',
 				console.log,
 			);

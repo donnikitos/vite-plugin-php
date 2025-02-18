@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { internalParam } from '../../shared';
 import log from '../log';
 
-const php = {
+const PHP_Server = {
 	binary: 'php',
 	port: 65535,
 	process: undefined as undefined | ReturnType<typeof spawn>,
@@ -12,18 +12,18 @@ const php = {
 };
 
 function start(root: string) {
-	if (!php.process?.pid) {
+	if (!PHP_Server.process?.pid) {
 		const routerFileUrl = new URL('./router.php', import.meta.url);
 
-		php.process = spawn(php.binary, [
+		PHP_Server.process = spawn(PHP_Server.binary, [
 			'-S',
-			'localhost:' + php.port,
+			'localhost:' + PHP_Server.port,
 			'-t',
 			root,
 			fileURLToPath(routerFileUrl),
 		])
 			.once('spawn', () => {
-				log(`Server started (PID: ${php.process?.pid})`);
+				log(`Server started (PID: ${PHP_Server.process?.pid})`);
 			})
 			.on('error', (error) => {
 				log(`Server error: ${error.message})`, {
@@ -31,7 +31,7 @@ function start(root: string) {
 				});
 			});
 
-		php.process.stdout?.on('data', (data) => {
+		PHP_Server.process.stdout?.on('data', (data) => {
 			log('', { timestamp: true });
 
 			`${data}`
@@ -52,19 +52,19 @@ function start(root: string) {
 }
 
 function stop(callBack: () => void) {
-	if (php.process) {
-		php.process.on('close', (code) => {
+	if (PHP_Server.process) {
+		PHP_Server.process.on('close', (code) => {
 			log('Ended with: ' + code);
-			php.process = undefined;
+			PHP_Server.process = undefined;
 
 			callBack();
 		});
 
-		php.process.stdin?.destroy();
-		php.process.stdout?.destroy();
-		php.process.stderr?.destroy();
+		PHP_Server.process.stdin?.destroy();
+		PHP_Server.process.stdout?.destroy();
+		PHP_Server.process.stderr?.destroy();
 
-		if (php.process.kill()) {
+		if (PHP_Server.process.kill()) {
 			log('Shutting down');
 		} else {
 			log('Failed to send SIGTERM', {
@@ -76,4 +76,4 @@ function stop(callBack: () => void) {
 	}
 }
 
-export default php;
+export default PHP_Server;
