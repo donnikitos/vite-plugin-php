@@ -1,10 +1,12 @@
+import { phpStartPattern } from './PHP_Code';
+
 const assetsPattern = new RegExp(
-	/^(.+?)(<\?(?:php|)\s+namespace\s\S+?(?:\s*;|\s*{).+)$/,
+	`^(.+?)(${phpStartPattern}\\s+namespace\\s\\S+?(?:\\s*;|\\s*{).+)$`,
 	'si',
 );
 
-const lastTagPattern = new RegExp(/^(.+(?:<\/.+?>|<.+?\/>))(.+|)$/, 'si');
-const closingPattern = new RegExp(/^(.+)(<\?(?:php|).+)$/, 'si');
+const lastTagPattern = new RegExp(`^(.+(?:</.+?>|<.+?/>))(.+|)$`, 'si');
+const closingPattern = new RegExp(`^(.+)(${phpStartPattern}.+)$`, 'si');
 
 export function fixAssetsInjection(input: string) {
 	let out = input;

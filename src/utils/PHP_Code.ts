@@ -2,7 +2,12 @@ import makeID from './makeID';
 import initReplaceEnv from './replaceEnv';
 import { readFile, writeFile } from './file';
 
-const phpTagPattern = /<\?(?:php|).+?(\?>|$)/gis;
+export const phpStartPattern = `<\\?(?:php|)`;
+export const phpEndPattern = `\\?>`;
+const phpTagRegex = new RegExp(
+	`${phpStartPattern}.+?(${phpEndPattern}|$)`,
+	'gis',
+);
 
 class PHP_Code {
 	file: string = '!!__VIRTUAL__!!.php';
@@ -33,7 +38,7 @@ class PHP_Code {
 		const isJS = this.file.includes('.js') || this.file.includes('.ts');
 		const isML = this.file.includes('.php') || this.file.includes('.htm');
 
-		this.code = this.code.replace(phpTagPattern, (match) => {
+		this.code = this.code.replace(phpTagRegex, (match) => {
 			let token = makeID();
 
 			if (isJS) {
