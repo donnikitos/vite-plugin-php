@@ -2,6 +2,8 @@ import { Plugin } from 'vite';
 import { shared } from '../shared';
 import PHP_Code from '../utils/PHP_Code';
 import { fixAssetsInjection } from '../utils/fixAssetsInjection';
+import Assets from '../utils/assets';
+import { dirname, resolve } from 'node:path';
 
 const buildPlugin: Plugin = {
 	name: 'build-php',
@@ -26,11 +28,74 @@ const buildPlugin: Plugin = {
 		if (entry) {
 			const php = PHP_Code.fromFile(entry).applyEnv().escape();
 
+			const assets = new Assets(php.code);
+			php.code = assets.escape().code;
+
 			return {
 				code: php.code,
-				meta: { phpMapping: php.mapping },
+				meta: {
+					phpMapping: php.mapping,
+					assetsMapping: assets.mapping,
+				},
 			};
 		}
+	},
+	buildEnd(error) {
+		shared.entries.forEach((entry) => {
+			const moduleInfo = this.getModuleInfo(`${entry}.html`);
+			const dir = dirname(entry);
+
+			if (moduleInfo) {
+				moduleInfo.importedIds.forEach((id) => {
+					const importInfo = this.getModuleInfo(id);
+
+					if (importInfo && id === resolve(`${dir}/${id}`)) {
+						// importInfo.meta.assetId = tokenMatch;
+						importInfo.meta.originalImporter = entry;
+					}
+				});
+			}
+		});
+
+		// console.log('\r\ninfo', info);
+		// if (info.meta.originalId && info.meta.assetsMapping) {
+		// 	const originalDir = `${dirname(info.meta.originalId)}/`;
+		// 	console.log('info.meta.assetsMapping', info.meta.assetsMapping);
+
+		// 	info.importedIds.forEach((id) => {
+		// 		const moduleInfo = this.getModuleInfo(id);
+		// 		let tokenMatch = '';
+
+		// 		if (
+		// 			moduleInfo &&
+		// 			Object.entries(info.meta.assetsMapping).some(
+		// 				([token, src]) => {
+		// 					const fullSrc = src
+		// 						? resolve(originalDir + src)
+		// 						: null;
+
+		// 					console.log('moduleInfo.code', moduleInfo.code);
+		// 					if (
+		// 						id === fullSrc ||
+		// 						moduleInfo.code?.startsWith(`/*${token}*/`)
+		// 					) {
+		// 						tokenMatch = token;
+
+		// 						return true;
+		// 					}
+		// 				},
+		// 			)
+		// 		) {
+		// 			moduleInfo.meta.assetId = tokenMatch;
+		// 			moduleInfo.meta.originalImporter = info.meta.originalId;
+		// 		}
+		// 	});
+		// }
+		// console.log('-------------');
+		// console.log(
+		// 	'this.getModuleInfo',
+		// 	this.getModuleInfo('pages/test.php.html?html-proxy&index=2.js')?.importers,
+		// );
 	},
 	generateBundle: {
 		order: 'post',

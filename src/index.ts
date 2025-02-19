@@ -52,7 +52,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					),
 				];
 
-				consoleHijack();
+				// consoleHijack();
 
 				return {
 					build: {
