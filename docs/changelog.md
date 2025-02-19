@@ -11,7 +11,7 @@
 -   Improved asset injection for namespaced files
 -   Improved plugin shutdown and cleanup functionality
 
-\
+
 ### Releases >= 1.0.0
 
 | Version | Feature                                                                                                                            |
@@ -43,7 +43,7 @@
 | 1.0.4   |                                                                                                                                    |
 | 1.0.1   | Since version `^1.0.0` the plugin uses PHP's dev-server to compute PHP code and to provide all usual server variables and features |
 
-\
+
 ### Initial beta release
 
 | Version | Feature                                                                                                                            |
