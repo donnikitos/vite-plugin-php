@@ -1,24 +1,16 @@
-<div style="text-align: center;">
+<p align="center" style="text-align: center;">
 	<img
 	src="https://vite-php.nititech.de/assets/vite-php.logo.svg"
 	alt="vite-plugin-php logo"
-	style="width: 100%; max-width: 250px;" />
-</div>
+	style="width: 250px; max-width: 100%;" />
+</p>
 
 <div style="display: grid; grid-template-columns: max-content max-content; column-gap: 10px;">
-	<a href="https://github.com/donnikitos/vite-plugin-php/blob/master/LICENSE" target="_blank">
-		<img src="https://img.shields.io/github/license/donnikitos/vite-plugin-php?color=blue&style=for-the-badge" alt="License" />
-	</a>
+	<a href="https://github.com/donnikitos/vite-plugin-php/blob/master/LICENSE" target="_blank"><img src="https://img.shields.io/github/license/donnikitos/vite-plugin-php?color=blue&style=for-the-badge" alt="License" /></a>
 	<div></div>
-	<a href="https://www.npmjs.com/package/vite-plugin-php" target="_blank">
-		<img src="https://img.shields.io/npm/dt/vite-plugin-php?style=for-the-badge" alt="NPM" />
-	</a>
-	<a href="https://github.com/donnikitos/vite-plugin-php" target="_blank">
-		<img src="https://img.shields.io/github/stars/donnikitos/vite-plugin-php?label=GitHub%20Stars&style=for-the-badge" alt="GitHub Stars" />
-	</a>
-	<a href="https://github.com/donnikitos/vite-plugin-php/issues" target="_blank">
-		<img src="https://img.shields.io/github/issues/donnikitos/vite-plugin-php?style=for-the-badge" alt="Issues" />
-	</a>
+	<a href="https://www.npmjs.com/package/vite-plugin-php" target="_blank"><img src="https://img.shields.io/npm/dt/vite-plugin-php?style=for-the-badge" alt="NPM" /></a>
+	<a href="https://github.com/donnikitos/vite-plugin-php" target="_blank"><img src="https://img.shields.io/github/stars/donnikitos/vite-plugin-php?label=GitHub%20Stars&style=for-the-badge" alt="GitHub Stars" /></a>
+	<a href="https://github.com/donnikitos/vite-plugin-php/issues" target="_blank"><img src="https://img.shields.io/github/issues/donnikitos/vite-plugin-php?style=for-the-badge" alt="Issues" /></a>
 	<img src="https://img.shields.io/github/last-commit/donnikitos/vite-plugin-php?style=for-the-badge" alt="Last Commit" />
 </div>
 
@@ -35,9 +27,11 @@ export default defineConfig({
 });
 ```
 
-<div style="text-align: center; font-weight: 800;">
-	<a href="https://vite-php.nititech.de/">Wiki</a> | <a href="https://github.com/donnikitos/vite-plugin-php/discussions">Discussions</a> | <a href="https://github.com/nititech/php-vite-starter">Starter-Repo</a>
-</div>
+<p align="center">
+	<b>
+		<a href="https://vite-php.nititech.de/">Wiki</a> | <a href="https://github.com/donnikitos/vite-plugin-php/discussions">Discussions</a> | <a href="https://github.com/nititech/php-vite-starter">Starter-Repo</a>
+	</b>
+</p>
 
 ## ⚡ Latest changes
 
