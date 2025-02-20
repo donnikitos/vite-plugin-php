@@ -37,7 +37,7 @@ export default defineConfig({
 
 ##### Major Release 2.0.0 !!!
 
-Including full _PHP error logging_ into console, rewritten code for _better performance_, bug fixes, etc.
+Including full _PHP error logging_ into console, rewritten code for _better performance_, bug fixes, etc.\
 [See changelog](https://vite-php.nititech.de/changelog).
 
 ##### Releases >= 1.0.0
@@ -94,6 +94,7 @@ type UsePHPConfig = {
 	};
 };
 
+// Detailed description on https://www.php.net/manual/en/errorfunc.constants.php
 const EPHPError = {
 	ERROR: 1,
 	WARNING: 2,
@@ -115,6 +116,9 @@ const EPHPError = {
 ```
 
 By default the plugin is trying to access the system `php`-binary and load the `index.php` file as the main entry point.
+
+#### Alternative entry points
+
 However you have the possibility to use an other binary or even compile multiple entry-points:
 
 ```js
@@ -152,7 +156,7 @@ usePHP({
 
 These entries will also render according to the routing table above.
 
-##### Rewrite urls
+#### Rewrite urls
 
 If you are using some sort of Apaches _mod_rewrite_ magic or nginx rewrite rules you can simulate them with the newly added in `rewriteUrl` property.
 The rewriteUrl function has one parameter - the requested URL given as URL object - and return either a modified URL object or undefined:
@@ -174,6 +178,30 @@ usePHP({
 ```
 
 ⚠️ **Attention:** If using the rewriteUrl property you will need to exclude (_return undefined_) assets like CSS, JavaScript, Images, etc.., that match your transpiled php file names, on your own!
+
+#### Error logging
+
+Just like in native PHP you can specify what errors you want to see:
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite';
+import usePHP, { EPHPError } from 'vite-plugin-php';
+
+export default defineConfig({
+	plugins: [
+		usePHP({
+			dev: {
+				errorLevels:
+					EPHPError.ERROR | EPHPError.WARNING | EPHPError.STRICT,
+			},
+		}),
+	],
+});
+```
+
+This log will be printed into your console, just like any other message about what is happening in Vite.\
+For more details about the meaning of the error level constants, visit the original [PHP-documentation](https://www.php.net/manual/en/errorfunc.constants.php).
 
 ## Specific oddities
 
