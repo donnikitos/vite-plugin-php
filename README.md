@@ -27,7 +27,7 @@ export default defineConfig({
 });
 ```
 
-<p align="center">
+<p align="center" style="text-align: center;">
 	<b>
 		<a href="https://vite-php.nititech.de/">Wiki</a> | <a href="https://github.com/donnikitos/vite-plugin-php/discussions">Discussions</a> | <a href="https://github.com/nititech/php-vite-starter">Starter-Repo</a>
 	</b>
