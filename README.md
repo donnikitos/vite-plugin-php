@@ -244,9 +244,9 @@ The plugin won't be able to retain the position of some asset tags like `<script
 Vite processes these independently and merges/ splits them dynamically.\
 These will be attached to the `<head>` tag or put right in the beginning of the file.
 
-If the file contains a PHP **namespace** the assets will be either
-a) placed after the last closed tag
-b) placed right before the last `<?` tag
+If the file contains a PHP **namespace** the assets will be either\
+a) placed after the last closed tag\
+b) placed right before the last `<?` tag\
 c) placed at the end of the file
 
 ## Issues
