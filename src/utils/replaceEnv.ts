@@ -1,6 +1,8 @@
-import { relative } from 'path';
-import { normalizePath, ResolvedConfig, UserConfig } from 'vite';
+import { relative } from 'node:path';
+import { normalizePath, UserConfig } from 'vite';
 import colors from 'picocolors';
+import { shared } from '../shared';
+import { hasViteConfig } from './assert';
 
 // Taken from original Vite code: https://github.com/vitejs/vite/blob/2f7bf79bfc668fc260fb93fa705ce32ac7d1d665/packages/vite/src/node/env.ts#L75
 
@@ -20,14 +22,18 @@ function resolveEnvPrefix({ envPrefix = 'VITE_' }: UserConfig) {
 
 const envPattern = /%(\S+?)%/g;
 
-function initReplaceEnv(config: ResolvedConfig) {
-	const envPrefix = resolveEnvPrefix({ envPrefix: config.envPrefix });
-	const env: Record<string, any> = { ...config.env };
+function initReplaceEnv() {
+	hasViteConfig(shared.viteConfig);
+
+	const { env, define, root, logger } = shared.viteConfig;
+	const envPrefix = resolveEnvPrefix({
+		envPrefix: shared.viteConfig.envPrefix,
+	});
 
 	// account for user env defines
-	for (const key in config.define) {
+	for (const key in define) {
 		if (key.startsWith(`import.meta.env.`)) {
-			const val = config.define[key];
+			const val = define[key];
 			if (typeof val === 'string') {
 				try {
 					const parsed = JSON.parse(val);
@@ -43,15 +49,14 @@ function initReplaceEnv(config: ResolvedConfig) {
 	}
 
 	return function replaceEnv(content: string, filename: string) {
+		const relativeHtml = normalizePath(relative(root, filename));
+
 		return content.replace(envPattern, (text, key) => {
 			if (key in env) {
 				return env[key];
 			} else {
 				if (envPrefix.some((prefix) => key.startsWith(prefix))) {
-					const relativeHtml = normalizePath(
-						relative(config.root, filename),
-					);
-					config.logger.warn(
+					logger.warn(
 						colors.yellow(
 							colors.bold(
 								`(!) ${text} is not defined in env variables found in /${relativeHtml}. ` +
