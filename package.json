@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-php",
-	"version": "1.0.71",
+	"version": "2.0.0",
 	"author": "Nikita 'donnikitos' Nitichevski <me@donnikitos.com> (https://donnikitos.com/)",
 	"repository": {
 		"type": "git",
@@ -37,7 +37,7 @@
 	"files": [
 		"dist"
 	],
-	"homepage": "https://github.com/donnikitos/vite-plugin-php#readme",
+	"homepage": "https://vite-php.nititech.de/",
 	"keywords": [
 		"vite",
 		"vite-plugin",
@@ -55,7 +55,9 @@
 		"loader",
 		"url rewrite",
 		"url router",
-		"mod_rewrite"
+		"mod_rewrite",
+		"bundler",
+		"asset-bundler"
 	],
 	"license": "MIT",
 	"scripts": {
