@@ -201,7 +201,7 @@ const servePlugin: Plugin = {
 								)
 							) {
 								out = await server.transformIndexHtml(
-									`/${entry}.html`,
+									`/${entry}.html:${requestUrl}`,
 									out,
 									requestUrl,
 								);
