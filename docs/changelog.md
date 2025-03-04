@@ -1,5 +1,11 @@
 # Changelog
 
+### Latest
+
+| Version | Feature                                                                                                                 |
+| ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 2.0.1   | Fixed script module individualization during development. Virtual script module names now include original request path |
+
 ### Major release 2.0.0
 
 -   Rewritten and improved plugin code -> cleaner and more understandable codebase
@@ -10,7 +16,6 @@
 -   Fixed file inclusion during development
 -   Improved asset injection for namespaced files
 -   Improved plugin shutdown and cleanup functionality
-
 
 ### Releases >= 1.0.0
 
@@ -43,10 +48,9 @@
 | 1.0.4   |                                                                                                                                    |
 | 1.0.1   | Since version `^1.0.0` the plugin uses PHP's dev-server to compute PHP code and to provide all usual server variables and features |
 
-
 ### Initial beta release
 
-| Version | Feature                                                                                                                            |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 0.9.1   |                                                                                                                                    |
-| 0.9.0   |                                                                                                                                    |
+| Version | Feature |
+| ------- | ------- |
+| 0.9.1   |         |
+| 0.9.0   |         |

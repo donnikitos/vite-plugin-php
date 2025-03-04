@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-php",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"author": "Nikita 'donnikitos' Nitichevski <me@donnikitos.com> (https://donnikitos.com/)",
 	"repository": {
 		"type": "git",
