@@ -17,7 +17,7 @@ function start(root: string) {
 
 		PHP_Server.process = spawn(PHP_Server.binary, [
 			'-S',
-			'localhost:' + PHP_Server.port,
+			'0.0.0.0:' + PHP_Server.port,
 			'-t',
 			root,
 			fileURLToPath(routerFileUrl),

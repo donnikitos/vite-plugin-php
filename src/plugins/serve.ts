@@ -83,7 +83,7 @@ const servePlugin: Plugin = {
 						throw error;
 					});
 
-					const url = new URL(req.url, 'http://localhost');
+					const url = new URL(req.url, 'http://0.0.0.0');
 					if (shared.viteConfig?.server.port) {
 						url.port = shared.viteConfig.server.port.toString();
 					}
