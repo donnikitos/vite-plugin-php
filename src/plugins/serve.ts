@@ -147,6 +147,11 @@ const servePlugin: Plugin = {
 								const chunks: any[] = [];
 								let statusCode: IncomingMessage['statusCode'];
 								let incomingHeaders: IncomingHttpHeaders = {};
+								let promiseResolve: any, promiseReject;
+								let promise = new Promise(function(resolve, reject){
+								  promiseResolve = resolve;
+								  promiseReject = reject;
+								});
 
 								const request = http
 									.request(
@@ -165,13 +170,15 @@ const servePlugin: Plugin = {
 
 											msg.on('data', (data) => {
 												chunks.push(data);
+									  			promiseResolve()
 											});
 										},
 									)
 									.on('error', (error) => {
 										reject(error);
 									})
-									.on('close', () => {
+									.on('close', async () => {
+								  		await promise;
 										const content =
 											Buffer.concat(chunks).toString(
 												'utf8',
@@ -193,7 +200,7 @@ const servePlugin: Plugin = {
 								request.end();
 							});
 
-							let out = phpResult.content;
+							let out = await phpResult.content;
 
 							if (
 								phpResult.headers['content-type']?.includes(
