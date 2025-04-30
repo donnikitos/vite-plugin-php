@@ -10,6 +10,7 @@ export * from './enums/php-error';
 
 export type UsePHPConfig = {
 	binary?: string;
+	php?: { host?: string };
 	entry?: string | string[];
 	rewriteUrl?: (requestUrl: URL) => URL | undefined;
 	tempDir?: string;
@@ -23,6 +24,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 	const { entry = 'index.php' } = cfg;
 
 	PHP_Server.binary = cfg.binary ?? PHP_Server.binary;
+	PHP_Server.host = cfg.php?.host ?? PHP_Server.host;
 	serve.rewriteUrl = cfg.rewriteUrl ?? serve.rewriteUrl;
 	shared.entries = Array.isArray(entry) ? entry : [entry];
 	shared.tempDir = cfg.tempDir ?? shared.tempDir;
