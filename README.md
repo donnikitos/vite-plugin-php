@@ -84,6 +84,8 @@ The configuration takes following properties:
 ```ts
 type UsePHPConfig = {
 	binary?: string;
+	// Override default PHP server host address. Default is `localhost`.
+	php?: { host?: string };
 	entry?: string | string[];
 	rewriteUrl?: (requestUrl: URL) => URL | undefined;
 	tempDir?: string;

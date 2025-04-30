@@ -2,10 +2,10 @@
 
 ### Latest
 
-| Version | Feature                                                                                                                 |
-| ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 2.0.2   | Added ability to run multiple projects that use vite-plugin-php in parallel!                                            |
-| 2.0.1   | Fixed script module individualization during development. Virtual script module names now include original request path |
+| Version | Feature                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2.0.2   | Added ability to run multiple projects that use vite-plugin-php in parallel!<br />Added possibility to override default PHP server host address. |
+| 2.0.1   | Fixed script module individualization during development. Virtual script module names now include original request path                          |
 
 ### Major release 2.0.0
 
