@@ -66,9 +66,9 @@ const servePlugin: Plugin = {
 			PHP_Code.fromFile(entry).applyEnv().write(tempName(entry));
 		});
 	},
-	configureServer(server) {
+	async configureServer(server) {
 		if (!PHP_Server.process) {
-			PHP_Server.start(server?.config.root);
+			await PHP_Server.start(server?.config.root);
 		}
 
 		server.middlewares.use(async (req, res, next) => {
@@ -115,6 +115,7 @@ const servePlugin: Plugin = {
 
 						if (existsSync(resolve(tempFile))) {
 							url.pathname = tempFile;
+							url.host = PHP_Server.host;
 							url.port = PHP_Server.port.toString();
 
 							url.searchParams.set(
