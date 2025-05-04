@@ -1,4 +1,4 @@
-import { Plugin } from 'vite';
+import { Plugin, ViteDevServer } from 'vite';
 import { resolve } from 'node:path';
 import { existsSync, rmSync } from 'node:fs';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
@@ -16,11 +16,13 @@ function tempName(entry: string) {
 	return `${shared.tempDir}/${entry}`;
 }
 
+let devServer: undefined | ViteDevServer = undefined;
+
 const servePlugin: Plugin = {
 	name: 'serve-php',
 	apply: 'serve',
 	enforce: 'post',
-	configResolved() {
+	configResolved(config) {
 		function handleExit(signal: any) {
 			if (signal === 'SIGINT') {
 				console.log();
@@ -61,14 +63,12 @@ const servePlugin: Plugin = {
 		if (!existsSync(gitIgnoreFile)) {
 			writeFile(gitIgnoreFile, '*\r\n**/*');
 		}
-
-		shared.entries.forEach((entry) => {
-			PHP_Code.fromFile(entry).applyEnv().write(tempName(entry));
-		});
 	},
 	async configureServer(server) {
+		devServer = server;
+
 		if (!PHP_Server.process) {
-			await PHP_Server.start(server?.config.root);
+			await PHP_Server.start(server.config.root);
 		}
 
 		server.middlewares.use(async (req, res, next) => {
@@ -194,24 +194,10 @@ const servePlugin: Plugin = {
 								request.end();
 							});
 
-							let out = phpResult.content;
-
-							if (
-								phpResult.headers['content-type']?.includes(
-									'html',
-								)
-							) {
-								out = await server.transformIndexHtml(
-									`/${entry}.html:${requestUrl}`,
-									out,
-									requestUrl,
-								);
-							}
-
 							res.writeHead(
 								phpResult.statusCode || 200,
 								phpResult.headers,
-							).end(out);
+							).end(phpResult.content);
 
 							return;
 						}
@@ -224,14 +210,71 @@ const servePlugin: Plugin = {
 			next();
 		});
 	},
+	// `rollupOptions.input` entries not arriving in `resolveId(source, importer, options)` -> force file loading with buildStart
+	async buildStart(options) {
+		await Promise.allSettled(
+			shared.entries.map(async (entry) => {
+				await this.load({
+					// Process as virtual module
+					id: `\0${entry}`,
+					meta: { entryPath: entry },
+				});
+			}),
+		);
+	},
+	load(id) {
+		const moduleInfo = this.getModuleInfo(id);
+
+		if (moduleInfo?.meta.entryPath) {
+			const php = PHP_Code.fromFile(moduleInfo.meta.entryPath);
+
+			return {
+				code: `export default ${JSON.stringify(php.code)}`,
+			};
+		}
+	},
+	async transform(code, id, options) {
+		const moduleInfo = this.getModuleInfo(id);
+
+		if (moduleInfo?.meta.entryPath) {
+			const php = new PHP_Code(
+				JSON.parse(code.substring('export default '.length)),
+			);
+			php.applyEnv();
+
+			if (devServer) {
+				php.escape();
+				php.code = await devServer.transformIndexHtml(
+					`/${moduleInfo.meta.entryPath}.html`,
+					php.code,
+				);
+				php.code = PHP_Code.unescape(php.code, php.mapping);
+			}
+
+			php.write(tempName(moduleInfo.meta.entryPath));
+
+			return {
+				code: `export default ${JSON.stringify(php.code)}`,
+			};
+		}
+	},
+	async watchChange(id, change) {
+		const entry = shared.entries.find(
+			(entryFile) => resolve(entryFile) === resolve(id),
+		);
+
+		if (entry) {
+			await this.load({
+				id: `\0${entry}`,
+			});
+		}
+	},
 	handleHotUpdate({ server, file }) {
 		const entry = shared.entries.find(
 			(entryFile) => resolve(entryFile) === resolve(file),
 		);
 
 		if (entry) {
-			PHP_Code.fromFile(entry).applyEnv().write(tempName(entry));
-
 			server.moduleGraph.invalidateAll();
 		}
 
