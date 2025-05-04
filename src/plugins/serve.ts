@@ -14,6 +14,8 @@ export const serve = {
 
 let devServer: undefined | ViteDevServer = undefined;
 
+const entryMap = new Map<string, string>();
+
 const servePlugin: Plugin = {
 	name: 'serve-php',
 	apply: 'serve',
@@ -47,19 +49,22 @@ const servePlugin: Plugin = {
 	async buildStart(options) {
 		await Promise.allSettled(
 			shared.entries.map(async (entry) => {
+				// Process as virtual modules
+				const id = `\0${entry}`;
+
+				entryMap.set(id, entry);
+
 				await this.load({
-					// Process as virtual module
-					id: `\0${entry}`,
-					meta: { entryPath: entry },
+					id,
 				});
 			}),
 		);
 	},
 	load(id) {
-		const moduleInfo = this.getModuleInfo(id);
+		const entry = entryMap.get(id);
 
-		if (moduleInfo?.meta.entryPath) {
-			const php = PHP_Code.fromFile(moduleInfo.meta.entryPath);
+		if (entry) {
+			const php = PHP_Code.fromFile(entry);
 
 			return {
 				code: `export default ${JSON.stringify(php.code)}`,
@@ -67,9 +72,9 @@ const servePlugin: Plugin = {
 		}
 	},
 	async transform(code, id, options) {
-		const moduleInfo = this.getModuleInfo(id);
+		const entry = entryMap.get(id);
 
-		if (moduleInfo?.meta.entryPath) {
+		if (entry) {
 			const php = new PHP_Code(
 				JSON.parse(code.substring('export default '.length)),
 			);
@@ -78,13 +83,13 @@ const servePlugin: Plugin = {
 			if (devServer) {
 				php.escape();
 				php.code = await devServer.transformIndexHtml(
-					`/${moduleInfo.meta.entryPath}.html`,
+					`/${entry}.html`,
 					php.code,
 				);
 				php.code = PHP_Code.unescape(php.code, php.mapping);
 			}
 
-			php.write(tempName(moduleInfo.meta.entryPath));
+			php.write(tempName(entry));
 
 			return {
 				code: `export default ${JSON.stringify(php.code)}`,
