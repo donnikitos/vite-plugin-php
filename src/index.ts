@@ -73,7 +73,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				shared.viteConfig = _config;
 			},
 		},
-		servePlugin,
+		...servePlugin,
 		...buildPlugin,
 	];
 }
