@@ -44,6 +44,7 @@ const buildPlugin: Plugin[] = [
 		name: 'php-build',
 		apply: 'build',
 		transform: {
+			order: 'pre',
 			handler(code, id, options) {
 				const entry = entryMap.get(id);
 
@@ -80,7 +81,6 @@ const buildPlugin: Plugin[] = [
 		name: 'php-build',
 		apply: 'build',
 		transformIndexHtml: {
-			order: 'post',
 			handler(html, ctx) {
 				const entry = entryMap.get(ctx.filename);
 
