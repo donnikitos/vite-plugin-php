@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'url';
-import { internalParam } from '../../shared';
+import { internalParam, shared } from '../../shared';
 import log from '../log';
 import tcpPortUsed from 'tcp-port-used';
 
@@ -13,7 +13,7 @@ const PHP_Server = {
 	stop,
 };
 
-async function start(root: string) {
+async function start(root = shared.projectRoot) {
 	if (!PHP_Server.process?.pid) {
 		await new Promise<number | undefined>(async (resolve, reject) => {
 			const routerFileUrl = new URL('./router.php', import.meta.url);

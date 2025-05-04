@@ -5,6 +5,7 @@ import { EPHPError } from './enums/php-error';
 export const internalParam = '__314159265359__';
 
 export const shared = {
+	projectRoot: process.cwd(),
 	viteConfig: undefined as undefined | ResolvedConfig,
 	devConfig: {
 		cleanup: true,
