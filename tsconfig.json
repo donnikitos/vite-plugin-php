@@ -8,7 +8,8 @@
 		"declaration": true,
 		"sourceMap": true,
 		"noUnusedLocals": true,
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"verbatimModuleSyntax": true
 	},
 	"include": ["src"]
 }

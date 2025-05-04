@@ -2,7 +2,7 @@ import { Connect } from 'vite';
 import { internalParam, shared } from '../../shared';
 import { serve } from '../../plugins/serve';
 import { tempName } from '../file';
-import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
+import http, { type IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import PHP_Server from '.';

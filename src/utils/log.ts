@@ -2,7 +2,7 @@ import colors from 'picocolors';
 import { hasViteConfig } from './assert';
 import { shared } from '../shared';
 import { EPHPError } from '../enums/php-error';
-import { LogErrorOptions, LogType } from 'vite';
+import type { LogErrorOptions, LogType } from 'vite';
 import { resolve } from 'node:path';
 
 type LogOptions = Partial<

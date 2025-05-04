@@ -1,5 +1,5 @@
-import { ResolvedConfig } from 'vite';
-import { UsePHPConfig } from '.';
+import type { ResolvedConfig } from 'vite';
+import type { UsePHPConfig } from '.';
 import { EPHPError } from './enums/php-error';
 
 export const internalParam = '__314159265359__';

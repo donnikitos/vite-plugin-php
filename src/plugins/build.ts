@@ -1,4 +1,4 @@
-import { Plugin } from 'vite';
+import type { Plugin } from 'vite';
 import { shared } from '../shared';
 import PHP_Code from '../utils/PHP_Code';
 import { fixAssetsInjection } from '../utils/fixAssetsInjection';

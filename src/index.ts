@@ -1,4 +1,4 @@
-import { Plugin } from 'vite';
+import type { Plugin } from 'vite';
 import PHP_Server from './utils/PHP_Server';
 import fastGlob from 'fast-glob';
 import servePlugin, { serve } from './plugins/serve';

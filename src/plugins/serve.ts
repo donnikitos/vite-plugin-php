@@ -1,4 +1,4 @@
-import { Plugin, ViteDevServer } from 'vite';
+import type { Plugin, ViteDevServer } from 'vite';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import { shared } from '../shared';
