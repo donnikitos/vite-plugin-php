@@ -1,12 +1,12 @@
 import { Plugin, ViteDevServer } from 'vite';
 import { resolve } from 'node:path';
-import { existsSync, rmSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import http, { IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import { shared, internalParam } from '../shared';
 import PHP_Server from '../utils/PHP_Server';
 import { writeFile } from '../utils/file';
 import PHP_Code from '../utils/PHP_Code';
-import log from '../utils/log';
+import handleExit from '../utils/handleExit';
 
 export const serve = {
 	rewriteUrl: (url: URL) => url as URL | undefined,
@@ -23,41 +23,7 @@ const servePlugin: Plugin = {
 	apply: 'serve',
 	enforce: 'post',
 	configResolved(config) {
-		function handleExit(signal: any) {
-			if (signal === 'SIGINT') {
-				console.log();
-			}
-
-			const tempDir = resolve(shared.tempDir);
-			if (shared.devConfig.cleanup && existsSync(tempDir)) {
-				log('Removing temporary files');
-				rmSync(tempDir, {
-					recursive: true,
-					force: true,
-				});
-			}
-
-			if (PHP_Server.process && shared.viteConfig?.command === 'serve') {
-				PHP_Server.stop(() => {
-					process.exit();
-				});
-			} else {
-				process.exit();
-			}
-		}
-
-		[
-			'exit',
-			'SIGINT',
-			'SIGUSR1',
-			'SIGUSR2',
-			'uncaughtException',
-			'SIGTERM',
-		].forEach((eventType) => {
-			new Promise((resolve) => process.on(eventType, resolve)).then(
-				handleExit,
-			);
-		});
+		handleExit.register();
 
 		const gitIgnoreFile = resolve(`${shared.tempDir}/.gitignore`);
 		if (!existsSync(gitIgnoreFile)) {
@@ -66,6 +32,14 @@ const servePlugin: Plugin = {
 	},
 	async configureServer(server) {
 		devServer = server;
+
+		server.restart = ((originalRestart) => {
+			return async function (...args) {
+				handleExit.unregister();
+
+				return originalRestart.apply(null, args);
+			};
+		})(server.restart);
 
 		if (!PHP_Server.process) {
 			await PHP_Server.start(server.config.root);
