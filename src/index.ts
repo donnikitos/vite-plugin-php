@@ -57,10 +57,19 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 				consoleHijack();
 
 				return {
-					build: {
-						rollupOptions: { input: shared.entries },
+					server: {
+						watch: {
+							ignored: [`**/${shared.tempDir}/**`],
+						},
 					},
-					optimizeDeps: { entries: shared.entries },
+					build: {
+						rollupOptions: {
+							input: shared.entries,
+						},
+					},
+					optimizeDeps: {
+						entries: shared.entries,
+					},
 				};
 			},
 			configResolved(_config) {
