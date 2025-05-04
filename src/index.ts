@@ -1,7 +1,6 @@
 import { Plugin } from 'vite';
 import PHP_Server from './utils/PHP_Server';
 import fastGlob from 'fast-glob';
-import consoleHijack from './utils/consoleHijack';
 import servePlugin, { serve } from './plugins/serve';
 import buildPlugin from './plugins/build';
 import { shared } from './shared';
@@ -53,8 +52,6 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 						),
 					),
 				];
-
-				consoleHijack();
 
 				return {
 					server: {
