@@ -3,77 +3,124 @@ import { shared } from '../shared';
 import PHP_Code from '../utils/PHP_Code';
 import { fixAssetsInjection } from '../utils/fixAssetsInjection';
 
-const buildPlugin: Plugin = {
-	name: 'build-php',
-	apply: 'build',
-	enforce: 'pre',
-	resolveId(source, importer, options) {
-		if (shared.entries.includes(source)) {
-			return {
-				// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
-				id: `${source}.html`,
-				resolvedBy: 'vite-plugin-php',
-				meta: {
-					originalId: source,
-				},
-			};
-		}
-	},
-	load(id, options) {
-		const moduleInfo = this.getModuleInfo(id);
-		const entry = moduleInfo?.meta.originalId;
+const entryMap = new Map<string, string>();
+const codeMap = new Map<string, Record<string, string>>();
 
-		if (entry) {
-			const php = PHP_Code.fromFile(entry).applyEnv().escape();
+const buildPlugin: Plugin[] = [
+	{
+		name: 'build-php:pre',
+		apply: 'build',
+		enforce: 'pre',
+		resolveId: {
+			handler(source, importer, options) {
+				if (shared.entries.includes(source)) {
+					// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
+					const id = `${source}.html`;
 
-			return {
-				code: php.code,
-				meta: { phpMapping: php.mapping },
-			};
-		}
-	},
-	generateBundle: {
-		order: 'post',
-		handler(options, bundle, isWrite) {
-			Object.entries(bundle).forEach(([key, item]) => {
-				if (item.type === 'asset') {
-					const moduleInfo = this.getModuleInfo(item.fileName);
+					entryMap.set(id, source);
 
-					if (moduleInfo?.meta.originalId) {
-						const meta = moduleInfo.meta;
-
-						item.fileName = meta.originalId;
-
-						if (meta.phpMapping) {
-							item.source = PHP_Code.unescape(
-								item.source.toString(),
-								meta.phpMapping,
-							);
-						}
-
-						item.source = fixAssetsInjection(
-							item.source.toString(),
-						);
-					}
-				} else if (item.type === 'chunk' && item.facadeModuleId) {
-					const moduleInfo = this.getModuleInfo(item.facadeModuleId);
-
-					if (moduleInfo) {
-						const meta = moduleInfo.meta;
-
-						if (meta.phpMapping) {
-							item.code = PHP_Code.unescape(
-								item.code,
-								meta.phpMapping,
-							);
-						}
-
-						item.code = fixAssetsInjection(item.code);
-					}
+					return {
+						id,
+						resolvedBy: 'vite-plugin-php',
+					};
 				}
-			});
+			},
+		},
+		load: {
+			handler(id, options) {
+				const entry = entryMap.get(id);
+
+				if (entry) {
+					const php = PHP_Code.fromFile(entry);
+
+					return {
+						code: php.code,
+					};
+				}
+			},
+		},
+		transform: {
+			handler(code, id, options) {
+				const entry = entryMap.get(id);
+
+				if (entry) {
+					const php = new PHP_Code(code);
+					php.file = entry;
+					php.applyEnv();
+
+					return {
+						code: php.code,
+					};
+				}
+			},
+		},
+		transformIndexHtml: {
+			order: 'pre',
+			handler(html, ctx) {
+				const entry = entryMap.get(ctx.filename);
+
+				if (entry) {
+					ctx.filename = entry;
+
+					const php = new PHP_Code(html);
+					php.file = entry;
+					php.escape();
+					codeMap.set(entry, php.mapping);
+
+					return php.code;
+				}
+			},
 		},
 	},
-};
+	{
+		name: 'php-build:post',
+		apply: 'build',
+		enforce: 'pre',
+		transformIndexHtml: {
+			order: 'post',
+			handler(html, ctx) {
+				const entry = entryMap.get(ctx.filename);
+
+				if (entry) {
+					const escapes = codeMap.get(entry);
+
+					if (escapes) {
+						let php = PHP_Code.unescape(html, escapes);
+						php = fixAssetsInjection(php);
+
+						return php;
+					}
+				}
+			},
+		},
+		generateBundle: {
+			order: 'post',
+			handler(options, bundle, isWrite) {
+				Object.entries(bundle).forEach(([key, item]) => {
+					if (item.type === 'asset') {
+						const entry = entryMap.get(item.fileName);
+
+						if (entry) {
+							item.fileName = entry;
+						}
+					} else if (item.type === 'chunk' && item.facadeModuleId) {
+						const entry = entryMap.get(item.facadeModuleId);
+
+						if (entry) {
+							const escapes = codeMap.get(entry);
+
+							if (escapes) {
+								item.code = PHP_Code.unescape(
+									item.code,
+									escapes,
+								);
+							}
+						}
+					}
+				});
+			},
+		},
+	},
+];
 
 export default buildPlugin;

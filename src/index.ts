@@ -77,7 +77,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			},
 		},
 		servePlugin,
-		buildPlugin,
+		...buildPlugin,
 	];
 }
 
