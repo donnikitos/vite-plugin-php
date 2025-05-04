@@ -39,6 +39,10 @@ const buildPlugin: Plugin[] = [
 				}
 			},
 		},
+	},
+	{
+		name: 'php-build',
+		apply: 'build',
 		transform: {
 			handler(code, id, options) {
 				const entry = entryMap.get(id);
@@ -73,9 +77,8 @@ const buildPlugin: Plugin[] = [
 		},
 	},
 	{
-		name: 'php-build:post',
+		name: 'php-build',
 		apply: 'build',
-		enforce: 'pre',
 		transformIndexHtml: {
 			order: 'post',
 			handler(html, ctx) {
@@ -93,6 +96,11 @@ const buildPlugin: Plugin[] = [
 				}
 			},
 		},
+	},
+	{
+		name: 'php-build:post',
+		apply: 'build',
+		enforce: 'post',
 		generateBundle: {
 			order: 'post',
 			handler(options, bundle, isWrite) {
