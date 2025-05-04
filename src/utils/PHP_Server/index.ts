@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { internalParam, shared } from '../../shared';
 import log from '../log';
 import tcpPortUsed from 'tcp-port-used';

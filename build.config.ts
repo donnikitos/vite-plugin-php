@@ -1,5 +1,5 @@
-import { cp } from 'fs';
-import { resolve } from 'path';
+import { cp } from 'node:fs';
+import { resolve } from 'node:path';
 import { defineBuildConfig } from 'unbuild';
 
 export default defineBuildConfig({
