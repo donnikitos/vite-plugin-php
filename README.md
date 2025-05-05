@@ -35,20 +35,12 @@ export default defineConfig({
 
 ## ⚡ Latest changes
 
-##### Major Release 2.0.0 !!!
+##### Major Release 3.0.0 !!!
 
-Including full _PHP error logging_ into console, rewritten code for _better performance_, bug fixes, etc.\
+Plugin now fully utilizes the Vite pipeline to load, transform and HTML-transform files in proper order.\
+⚠️ This might result in breaking changes since code can now be affected by other plugins!
+
 [See changelog](https://vite-php.nititech.de/changelog).
-
-##### Releases >= 1.0.0
-
-| Version | Feature                                                          |
-| ------- | ---------------------------------------------------------------- |
-| 1.0.71  | Fixed assets prepending for namespaced PHP-files                 |
-| 1.0.70  | Added include path override for relative PHP imports in dev mode |
-| 1.0.69  | Using new token format to escape PHP in HTML                     |
-| 1.0.68  | Improved transpiled code evaluation (removed native `eval()`)    |
-| ...     | ...                                                              |
 
 ## Write some PHP code in your `index.php`
 
@@ -204,6 +196,56 @@ export default defineConfig({
 
 This log will be printed into your console, just like any other message about what is happening in Vite.\
 For more details about the meaning of the error level constants, visit the original [PHP-documentation](https://www.php.net/manual/en/errorfunc.constants.php).
+
+#### Altering transformation results
+
+With additional Vite-plugins you can now alter the outcome of the [`transformIndexHtml()`](https://vite.dev/guide/api-plugin.html#transformindexhtml) pipeline.\
+You can either apply modifications
+
+#### `before` PHP and Vite transforms
+
+```ts
+// vite.config.ts
+...,
+plugins: [
+	{
+		name: 'pre-transform',
+    order: 'pre',
+		transformIndexHtml(html, ctx) {
+			return html.replace(
+				'</body>',
+				'<?php /* some  code */ ?></body>',
+			);
+		},
+	},
+	usePHP(),
+],
+...
+```
+
+This adds a hook to run between loading the PHP code and unescaping PHP fragments, prior to passing everything further to Vite's own HTML transformation magic.
+
+#### `after` PHP and Vite transforms
+
+```ts
+// vite.config.ts
+...,
+plugins: [
+	usePHP(),
+  {
+    name: 'post-transform',
+    transformIndexHtml(html, ctx) {
+      return html.replace(
+        '</body>',
+        '<!-- Some html stuff --></body>',
+      );
+    },
+  },
+],
+...
+```
+
+This hook runs right after Vite's transformations and unescaping PHP fragments.
 
 ## Specific oddities
 
