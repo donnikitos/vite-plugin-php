@@ -1,17 +1,17 @@
 <p align="center" style="text-align: center;">
-	<img
-	src="https://vite-php.nititech.de/assets/vite-php.logo.svg"
-	alt="vite-plugin-php logo"
-	style="width: 250px; max-width: 100%;" />
+  <img
+  src="https://vite-php.nititech.de/assets/vite-php.logo.svg"
+  alt="vite-plugin-php logo"
+  style="width: 250px; max-width: 100%;" />
 </p>
 
 <div style="display: grid; grid-template-columns: max-content max-content; column-gap: 10px;">
-	<a href="https://github.com/donnikitos/vite-plugin-php/blob/master/LICENSE" target="_blank"><img src="https://img.shields.io/github/license/donnikitos/vite-plugin-php?color=blue&style=for-the-badge" alt="License" /></a>
-	<div></div>
-	<a href="https://www.npmjs.com/package/vite-plugin-php" target="_blank"><img src="https://img.shields.io/npm/dt/vite-plugin-php?style=for-the-badge" alt="NPM" /></a>
-	<a href="https://github.com/donnikitos/vite-plugin-php" target="_blank"><img src="https://img.shields.io/github/stars/donnikitos/vite-plugin-php?label=GitHub%20Stars&style=for-the-badge" alt="GitHub Stars" /></a>
-	<a href="https://github.com/donnikitos/vite-plugin-php/issues" target="_blank"><img src="https://img.shields.io/github/issues/donnikitos/vite-plugin-php?style=for-the-badge" alt="Issues" /></a>
-	<img src="https://img.shields.io/github/last-commit/donnikitos/vite-plugin-php?style=for-the-badge" alt="Last Commit" />
+  <a href="https://github.com/donnikitos/vite-plugin-php/blob/master/LICENSE" target="_blank"><img src="https://img.shields.io/github/license/donnikitos/vite-plugin-php?color=blue&style=for-the-badge" alt="License" /></a>
+  <div></div>
+  <a href="https://www.npmjs.com/package/vite-plugin-php" target="_blank"><img src="https://img.shields.io/npm/dt/vite-plugin-php?style=for-the-badge" alt="NPM" /></a>
+  <a href="https://github.com/donnikitos/vite-plugin-php" target="_blank"><img src="https://img.shields.io/github/stars/donnikitos/vite-plugin-php?label=GitHub%20Stars&style=for-the-badge" alt="GitHub Stars" /></a>
+  <a href="https://github.com/donnikitos/vite-plugin-php/issues" target="_blank"><img src="https://img.shields.io/github/issues/donnikitos/vite-plugin-php?style=for-the-badge" alt="Issues" /></a>
+  <img src="https://img.shields.io/github/last-commit/donnikitos/vite-plugin-php?style=for-the-badge" alt="Last Commit" />
 </div>
 
 \
@@ -23,14 +23,14 @@ import { defineConfig } from 'vite';
 import usePHP from 'vite-plugin-php';
 
 export default defineConfig({
-	plugins: [usePHP()],
+   plugins: [usePHP()],
 });
 ```
 
 <p align="center" style="text-align: center;">
-	<b>
-		<a href="https://www.npmjs.com/package/vite-plugin-php">NPM</a> | <a href="https://vite-php.nititech.de/">Wiki</a> | <a href="https://github.com/donnikitos/vite-plugin-php/discussions">Discussions</a> | <a href="https://github.com/nititech/php-vite-starter">Starter-Repo</a>
-	</b>
+  <b>
+    <a href="https://www.npmjs.com/package/vite-plugin-php">NPM</a> | <a href="https://vite-php.nititech.de/">Wiki</a> | <a href="https://github.com/donnikitos/vite-plugin-php/discussions">Discussions</a> | <a href="https://github.com/nititech/php-vite-starter">Starter-Repo</a>
+  </b>
 </p>
 
 ## ⚡ Latest changes
@@ -48,22 +48,22 @@ Plugin now fully utilizes the Vite pipeline to load, transform and HTML-transfor
 <!-- index.php -->
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	</head>
-	<body>
-		<div id="root">
-			<?="Render some text with PHP!"; ?>
-		</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div id="root">
+      <?="Render some text with PHP!"; ?>
+    </div>
 
-		<?php if(isset($_GET['show_hello'])): ?>
-			Hello world!
-		<?php endif; ?>
+    <?php if(isset($_GET['show_hello'])): ?>
+      Hello world!
+    <?php endif; ?>
 
-		<script src="./src/react-app.tsx" type="module"></script>
-	</body>
+    <script src="./src/react-app.tsx" type="module"></script>
+  </body>
 </html>
 ```
 
@@ -75,37 +75,37 @@ The configuration takes following properties:
 
 ```ts
 type UsePHPConfig = {
-	binary?: string;
-	// Override default PHP server host address. Default is `localhost`.
-	php?: { host?: string };
-	entry?: string | string[];
-	rewriteUrl?: (requestUrl: URL) => URL | undefined;
-	tempDir?: string;
-	dev?: {
-		// Takes on either a bitmask, or named constants EPHPError
-		errorLevels?: number;
-		cleanup?: boolean;
-	};
+   binary?: string;
+   // Override default PHP server host address. Default is `localhost`.
+   php?: { host?: string };
+   entry?: string | string[];
+   rewriteUrl?: (requestUrl: URL) => URL | undefined;
+   tempDir?: string;
+   dev?: {
+      // Takes on either a bitmask, or named constants EPHPError
+      errorLevels?: number;
+      cleanup?: boolean;
+   };
 };
 
 // Detailed description on https://www.php.net/manual/en/errorfunc.constants.php
 const EPHPError = {
-	ERROR: 1,
-	WARNING: 2,
-	PARSE: 4,
-	NOTICE: 8,
-	CORE_ERROR: 16,
-	CORE_WARNING: 32,
-	COMPILE_ERROR: 64,
-	COMPILE_WARNING: 128,
-	USER_ERROR: 256,
-	USER_WARNING: 512,
-	USER_NOTICE: 1024,
-	STRICT: 2048,
-	RECOVERABLE_ERROR: 4096,
-	DEPRECATED: 8192,
-	USER_DEPRECATED: 16384,
-	ALL: 32767,
+   ERROR: 1,
+   WARNING: 2,
+   PARSE: 4,
+   NOTICE: 8,
+   CORE_ERROR: 16,
+   CORE_WARNING: 32,
+   COMPILE_ERROR: 64,
+   COMPILE_WARNING: 128,
+   USER_ERROR: 256,
+   USER_WARNING: 512,
+   USER_NOTICE: 1024,
+   STRICT: 2048,
+   RECOVERABLE_ERROR: 4096,
+   DEPRECATED: 8192,
+   USER_DEPRECATED: 16384,
+   ALL: 32767,
 };
 ```
 
@@ -117,8 +117,8 @@ However you have the possibility to use an other binary or even compile multiple
 
 ```js
 usePHP({
-	binary: '/opt/lampp/bin/php-8.1.10',
-	entry: ['index.php', 'index_alt.php', 'pages/contact.php'],
+   binary: '/opt/lampp/bin/php-8.1.10',
+   entry: ['index.php', 'index_alt.php', 'pages/contact.php'],
 });
 ```
 
@@ -137,14 +137,14 @@ You can also specify wildcard entry points:
 
 ```js
 usePHP({
-	binary: '/opt/lampp/bin/php-8.1.10',
-	entry: [
-		'index.php',
-		'about.php',
-		'contact.php',
-		'pages/**/*.php',
-		'partials/*.php',
-	],
+   binary: '/opt/lampp/bin/php-8.1.10',
+   entry: [
+      'index.php',
+      'about.php',
+      'contact.php',
+      'pages/**/*.php',
+      'partials/*.php',
+   ],
 });
 ```
 
@@ -157,17 +157,17 @@ The rewriteUrl function has one parameter - the requested URL given as URL objec
 
 ```js
 usePHP({
-	entry: ['index.php', 'partials/**/*.php'],
-	rewriteUrl(requestUrl) {
-		if (['.js', '.css'].some((s) => requestUrl.pathname.includes(s))) {
-			return;
-		}
+   entry: ['index.php', 'partials/**/*.php'],
+   rewriteUrl(requestUrl) {
+      if (['.js', '.css'].some((s) => requestUrl.pathname.includes(s))) {
+         return;
+      }
 
-		requestUrl.search = '_request_=' + requestUrl.pathname;
-		requestUrl.pathname = 'index.php';
+      requestUrl.search = '_request_=' + requestUrl.pathname;
+      requestUrl.pathname = 'index.php';
 
-		return requestUrl;
-	},
+      return requestUrl;
+   },
 });
 ```
 
@@ -183,14 +183,14 @@ import { defineConfig } from 'vite';
 import usePHP, { EPHPError } from 'vite-plugin-php';
 
 export default defineConfig({
-	plugins: [
-		usePHP({
-			dev: {
-				errorLevels:
-					EPHPError.ERROR | EPHPError.WARNING | EPHPError.STRICT,
-			},
-		}),
-	],
+   plugins: [
+      usePHP({
+         dev: {
+            errorLevels:
+               EPHPError.ERROR | EPHPError.WARNING | EPHPError.STRICT,
+         },
+      }),
+   ],
 });
 ```
 
@@ -208,17 +208,19 @@ You can either apply modifications
 // vite.config.ts
 ...,
 plugins: [
-	{
-		name: 'pre-transform',
-    order: 'pre',
-		transformIndexHtml(html, ctx) {
-			return html.replace(
-				'</body>',
-				'<?php /* some  code */ ?></body>',
-			);
-		},
-	},
-	usePHP(),
+   {
+      name: 'pre-transform',
+      transformIndexHtml: {
+      order: 'pre',
+      handler(html, ctx) {
+         return html.replace(
+            '</body>',
+            '<div><?= "Pre PHP transform"; ?></div></body>',
+            );
+         },
+      },
+   },
+   usePHP(),
 ],
 ...
 ```
@@ -231,16 +233,19 @@ This adds a hook to run between loading the PHP code and unescaping PHP fragment
 // vite.config.ts
 ...,
 plugins: [
-	usePHP(),
-  {
-    name: 'post-transform',
-    transformIndexHtml(html, ctx) {
-      return html.replace(
-        '</body>',
-        '<!-- Some html stuff --></body>',
-      );
-    },
-  },
+   usePHP(),
+   {
+      name: 'post-transform',
+      transformIndexHtml: {
+         order: 'post',
+         handler(html, ctx) {
+            return html.replace(
+               '</body>',
+               '<div><?= "Post PHP transform"; ?></div></body>',
+            );
+         },
+      },
+   },
 ],
 ...
 ```
@@ -260,7 +265,7 @@ $var = 'foo';
 ?>
 
 <script type="module">
-	console.log('<?=$var; ?>');
+   console.log('<?=$var; ?>');
 </script>
 ```
 
@@ -281,7 +286,7 @@ The plugin won't be able to retain the position of some asset tags like `<script
 
 ```php
 <?php if($some_condition$) { ?>
-	<script src="./src/some_script.js" type="module"></script>
+   <script src="./src/some_script.js" type="module"></script>
 <?php } ?>
 ```
 
@@ -303,26 +308,26 @@ Love open source? Enjoying my project?\
 Your support can keep the momentum going! Consider a donation to fuel the creation of more innovative open source software.
 
 <table>
-	<tr>
-		<td>
-			via Ko-Fi
-		</td>
-		<td>
-			Buy me a coffee
-		</td>
-		<td>
-			via PayPal
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<a href="https://ko-fi.com/Y8Y2ALMG" target="_blank"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Ko-Fi" width="174"></a>
-		</td>
-		<td>
-			<a href="https://www.buymeacoffee.com/donnikitos" target="_blank"><img src="https://nititech.de/donate-buymeacoffee.png" alt="Buy Me A Coffee" width="174"></a>
-		</td>
-		<td>
-			<a href="https://www.paypal.com/donate/?hosted_button_id=EPXZPRTR7JHDW" target="_blank"><img src="https://nititech.de/donate-paypal.png" alt="PayPal" width="174"></a>
-		</td>
-	</tr>
+  <tr>
+    <td>
+      via Ko-Fi
+    </td>
+    <td>
+      Buy me a coffee
+    </td>
+    <td>
+      via PayPal
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://ko-fi.com/Y8Y2ALMG" target="_blank"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Ko-Fi" width="174"></a>
+    </td>
+    <td>
+      <a href="https://www.buymeacoffee.com/donnikitos" target="_blank"><img src="https://nititech.de/donate-buymeacoffee.png" alt="Buy Me A Coffee" width="174"></a>
+    </td>
+    <td>
+      <a href="https://www.paypal.com/donate/?hosted_button_id=EPXZPRTR7JHDW" target="_blank"><img src="https://nititech.de/donate-paypal.png" alt="PayPal" width="174"></a>
+    </td>
+  </tr>
 </table>
