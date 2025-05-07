@@ -82,7 +82,7 @@ const servePlugin: Plugin[] = [
 		},
 	},
 	{
-		name: 'php:serve-transform',
+		name: 'php:serve-escape',
 		apply: 'serve',
 		transform: {
 			async handler(code, id, options) {

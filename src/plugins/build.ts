@@ -8,7 +8,7 @@ const codeMap = new Map<string, Record<string, string>>();
 
 const buildPlugin: Plugin[] = [
 	{
-		name: 'build-php:pre',
+		name: 'php:build-load',
 		apply: 'build',
 		enforce: 'pre',
 		resolveId: {
@@ -41,24 +41,8 @@ const buildPlugin: Plugin[] = [
 		},
 	},
 	{
-		name: 'php-build',
+		name: 'php:build-escape',
 		apply: 'build',
-		transform: {
-			order: 'pre',
-			handler(code, id, options) {
-				const entry = entryMap.get(id);
-
-				if (entry) {
-					const php = new PHP_Code(code);
-					php.file = entry;
-					php.applyEnv();
-
-					return {
-						code: php.code,
-					};
-				}
-			},
-		},
 		transformIndexHtml: {
 			order: 'pre',
 			handler(html, ctx) {
@@ -69,6 +53,7 @@ const buildPlugin: Plugin[] = [
 
 					const php = new PHP_Code(html);
 					php.file = entry;
+					php.applyEnv();
 					php.escape();
 					codeMap.set(entry, php.mapping);
 
@@ -78,7 +63,7 @@ const buildPlugin: Plugin[] = [
 		},
 	},
 	{
-		name: 'php-build',
+		name: 'php:build-unescape',
 		apply: 'build',
 		transformIndexHtml: {
 			handler(html, ctx) {
@@ -98,7 +83,7 @@ const buildPlugin: Plugin[] = [
 		},
 	},
 	{
-		name: 'php-build:post',
+		name: 'php:build-bundle',
 		apply: 'build',
 		enforce: 'post',
 		generateBundle: {
