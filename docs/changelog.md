@@ -4,6 +4,7 @@
 
 | Version | Feature                                                                                                                                          |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2.0.3   | Fixed exit hook pollution during development: Vite server restarts are no longer registering multiple exit handlers.                             |
 | 2.0.2   | Added ability to run multiple projects that use vite-plugin-php in parallel!<br />Added possibility to override default PHP server host address. |
 | 2.0.1   | Fixed script module individualization during development. Virtual script module names now include original request path                          |
 
