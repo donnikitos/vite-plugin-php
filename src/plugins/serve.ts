@@ -21,48 +21,53 @@ const codeMap = new Map<string, Record<string, string>>();
 
 const servePlugin: Plugin[] = [
 	{
-		name: 'serve-php:pre',
+		name: 'php:serve-load',
 		apply: 'serve',
-		enforce: 'pre',
-		configResolved(config) {
-			handleExit.register();
+		configResolved: {
+			handler(config) {
+				handleExit.register();
 
-			const gitIgnoreFile = resolve(`${shared.tempDir}/.gitignore`);
-			if (!existsSync(gitIgnoreFile)) {
-				writeFile(gitIgnoreFile, '*\r\n**/*');
-			}
+				const gitIgnoreFile = resolve(`${shared.tempDir}/.gitignore`);
+				if (!existsSync(gitIgnoreFile)) {
+					writeFile(gitIgnoreFile, '*\r\n**/*');
+				}
 
-			entryMatcher = new RegExp(
-				`(${shared.entries.join('|')}).html`,
-				'gs',
-			);
+				entryMatcher = new RegExp(
+					`(${shared.entries.join('|')}).html`,
+					'gs',
+				);
+			},
 		},
-		async configureServer(server) {
-			devServer = server;
+		configureServer: {
+			async handler(server) {
+				devServer = server;
 
-			server.restart = ((originalRestart) => {
-				return async function (...args) {
-					handleExit.unregister();
+				server.restart = ((originalRestart) => {
+					return async function (...args) {
+						handleExit.unregister();
 
-					return originalRestart.apply(null, args);
-				};
-			})(server.restart);
+						return originalRestart.apply(null, args);
+					};
+				})(server.restart);
 
-			if (!PHP_Server.process) {
-				await PHP_Server.start(server.config.root);
-			}
+				if (!PHP_Server.process) {
+					await PHP_Server.start(server.config.root);
+				}
 
-			server.middlewares.use(phpProxy);
+				server.middlewares.use(phpProxy);
+			},
 		},
 		// `rollupOptions.input` entries not arriving in `resolveId(source, importer, options)` -> force file loading with buildStart
-		async buildStart(options) {
-			await Promise.allSettled(
-				shared.entries.map(async (entry) => {
-					await this.load({
-						id: entry,
-					});
-				}),
-			);
+		buildStart: {
+			async handler(options) {
+				await Promise.allSettled(
+					shared.entries.map(async (entry) => {
+						await this.load({
+							id: entry,
+						});
+					}),
+				);
+			},
 		},
 		load: {
 			handler(id, options) {
@@ -75,6 +80,10 @@ const servePlugin: Plugin[] = [
 				}
 			},
 		},
+	},
+	{
+		name: 'php:serve-transform',
+		apply: 'serve',
 		transform: {
 			async handler(code, id, options) {
 				if (shared.entries.includes(id) && devServer) {
@@ -136,6 +145,39 @@ const servePlugin: Plugin[] = [
 				}
 			},
 		},
+	},
+	{
+		name: 'php:serve-unescape',
+		apply: 'serve',
+		transformIndexHtml: {
+			order: 'post',
+			handler(html, ctx) {
+				const entry = ctx.path.substring(
+					1,
+					ctx.path.length - '.html'.length,
+				);
+
+				if (shared.entries.includes(entry)) {
+					const escapes = codeMap.get(entry);
+
+					let php = new PHP_Code(html);
+					php.file = entry;
+
+					if (escapes) {
+						php.code = PHP_Code.unescape(php.code, escapes);
+					}
+					php.code = fixAssetsInjection(php.code);
+
+					php.write(tempName(entry));
+
+					return php.code;
+				}
+			},
+		},
+	},
+	{
+		name: 'php:serve-watch',
+		apply: 'serve',
 		async watchChange(id, change) {
 			const entry = shared.entries.find(
 				(entryFile) => resolve(entryFile) === resolve(id),
@@ -170,35 +212,6 @@ const servePlugin: Plugin[] = [
 			if (entry) {
 				server.moduleGraph.invalidateAll();
 			}
-		},
-	},
-	{
-		name: 'serve-php:unescape',
-		apply: 'serve',
-		transformIndexHtml: {
-			order: 'post',
-			handler(html, ctx) {
-				const entry = ctx.path.substring(
-					1,
-					ctx.path.length - '.html'.length,
-				);
-
-				if (shared.entries.includes(entry)) {
-					const escapes = codeMap.get(entry);
-
-					let php = new PHP_Code(html);
-					php.file = entry;
-
-					if (escapes) {
-						php.code = PHP_Code.unescape(php.code, escapes);
-					}
-					php.code = fixAssetsInjection(php.code);
-
-					php.write(tempName(entry));
-
-					return php.code;
-				}
-			},
 		},
 	},
 ];
