@@ -1,4 +1,4 @@
-import type { Plugin, ViteDevServer } from 'vite';
+import type { Logger, Plugin, ViteDevServer } from 'vite';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import { shared } from '../shared';
@@ -15,6 +15,8 @@ export const serve = {
 
 let devServer: undefined | ViteDevServer = undefined;
 
+let entryMatcher: RegExp = new RegExp(``, 'gs');
+
 const codeMap = new Map<string, Record<string, string>>();
 
 const servePlugin: Plugin[] = [
@@ -29,6 +31,11 @@ const servePlugin: Plugin[] = [
 			if (!existsSync(gitIgnoreFile)) {
 				writeFile(gitIgnoreFile, '*\r\n**/*');
 			}
+
+			entryMatcher = new RegExp(
+				`(${shared.entries.join('|')}).html`,
+				'gs',
+			);
 		},
 		async configureServer(server) {
 			devServer = server;
@@ -71,13 +78,42 @@ const servePlugin: Plugin[] = [
 		transform: {
 			async handler(code, id, options) {
 				if (shared.entries.includes(id) && devServer) {
-					return {
+					let ogWarnLogger: Logger['warn'] = () => {};
+
+					if (shared.viteConfig) {
+						const warnings = new Set();
+
+						ogWarnLogger = shared.viteConfig.logger.warn;
+
+						shared.viteConfig.logger.warn = ((fn) =>
+							function (...args) {
+								const ser = args
+									.toString()
+									.replace(entryMatcher, (match, p1) => p1);
+
+								if (warnings.has(ser)) {
+									return;
+								}
+
+								warnings.add(ser);
+
+								return fn.apply(null, args);
+							})(shared.viteConfig.logger.warn);
+					}
+
+					const res = {
 						code: await devServer.transformIndexHtml(
 							// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
 							`/${id}.html`,
 							code,
 						),
 					};
+
+					if (shared.viteConfig) {
+						shared.viteConfig.logger.warn = ogWarnLogger;
+					}
+
+					return res;
 				}
 			},
 		},
