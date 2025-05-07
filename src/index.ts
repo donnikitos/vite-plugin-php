@@ -34,7 +34,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 
 	return [
 		{
-			name: 'init-php',
+			name: 'php:init',
 			enforce: 'post',
 			config(config, env) {
 				shared.entries = [
