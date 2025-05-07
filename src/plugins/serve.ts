@@ -15,7 +15,6 @@ export const serve = {
 
 let devServer: undefined | ViteDevServer = undefined;
 
-const entryMap = new Map<string, string>();
 const codeMap = new Map<string, Record<string, string>>();
 
 const servePlugin: Plugin[] = [
@@ -52,23 +51,16 @@ const servePlugin: Plugin[] = [
 		async buildStart(options) {
 			await Promise.allSettled(
 				shared.entries.map(async (entry) => {
-					// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
-					const id = `${entry}.html`;
-
-					entryMap.set(id, entry);
-
 					await this.load({
-						id,
+						id: entry,
 					});
 				}),
 			);
 		},
 		load: {
 			handler(id, options) {
-				const entry = entryMap.get(id);
-
-				if (entry) {
-					const php = PHP_Code.fromFile(entry);
+				if (shared.entries.includes(id)) {
+					const php = PHP_Code.fromFile(id);
 
 					return {
 						code: php.code,
@@ -77,18 +69,34 @@ const servePlugin: Plugin[] = [
 			},
 		},
 		transform: {
-			order: 'pre',
 			async handler(code, id, options) {
-				const entry = entryMap.get(id);
+				if (shared.entries.includes(id) && devServer) {
+					return {
+						code: await devServer.transformIndexHtml(
+							// Rename ids because Vite transforms only .html files: https://github.com/vitejs/vite/blob/0cde495ebeb48bcfb5961784a30bfaed997790a0/packages/vite/src/node/plugins/html.ts#L330
+							`/${id}.html`,
+							code,
+						),
+					};
+				}
+			},
+		},
+		transformIndexHtml: {
+			order: 'pre',
+			handler(html, ctx) {
+				const entry = ctx.path.substring(
+					1,
+					ctx.path.length - '.html'.length,
+				);
 
-				if (entry) {
-					const php = new PHP_Code(code);
+				if (shared.entries.includes(entry)) {
+					const php = new PHP_Code(html);
 					php.file = entry;
 					php.applyEnv();
+					php.escape();
+					codeMap.set(entry, php.mapping);
 
-					return {
-						code: php.code,
-					};
+					return php.code;
 				}
 			},
 		},
@@ -98,10 +106,10 @@ const servePlugin: Plugin[] = [
 			);
 
 			if (entry) {
-				// Fail silently - skip `vite:import-analysis` plugin
+				// Fail silently - `vite:import-analysis` plugin doesn't like the second load
 				try {
 					await this.load({
-						id: `${entry}.html`,
+						id: entry,
 					});
 				} catch (error) {
 					// console.log('error', error);
@@ -125,56 +133,21 @@ const servePlugin: Plugin[] = [
 
 			if (entry) {
 				server.moduleGraph.invalidateAll();
-
-				const mod = server.moduleGraph.getModuleById(`${entry}.html`);
-
-				if (mod) {
-					return [mod];
-				}
 			}
-		},
-	},
-	{
-		name: 'serve-php:init-transform',
-		apply: 'serve',
-		transform: {
-			async handler(code, id, options) {
-				const entry = entryMap.get(id);
-
-				if (entry && devServer) {
-					return {
-						code: await devServer.transformIndexHtml(
-							`/${entry}.html`,
-							code,
-						),
-					};
-				}
-			},
-		},
-		transformIndexHtml: {
-			order: 'pre',
-			handler(html, ctx) {
-				const entry = entryMap.get(ctx.path.substring(1));
-
-				if (entry) {
-					const php = new PHP_Code(html);
-					php.file = entry;
-					php.escape();
-					codeMap.set(entry, php.mapping);
-
-					return php.code;
-				}
-			},
 		},
 	},
 	{
 		name: 'serve-php:unescape',
 		apply: 'serve',
 		transformIndexHtml: {
+			order: 'post',
 			handler(html, ctx) {
-				const entry = entryMap.get(ctx.path.substring(1));
+				const entry = ctx.path.substring(
+					1,
+					ctx.path.length - '.html'.length,
+				);
 
-				if (entry) {
+				if (shared.entries.includes(entry)) {
 					const escapes = codeMap.get(entry);
 
 					let php = new PHP_Code(html);
