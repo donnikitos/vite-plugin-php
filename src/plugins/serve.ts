@@ -149,6 +149,7 @@ const servePlugin: Plugin[] = [
 	{
 		name: 'php:serve-unescape',
 		apply: 'serve',
+		enforce: 'post',
 		transformIndexHtml: {
 			order: 'post',
 			handler(html, ctx) {

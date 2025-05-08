@@ -23,7 +23,7 @@ import { defineConfig } from 'vite';
 import usePHP from 'vite-plugin-php';
 
 export default defineConfig({
-   plugins: [usePHP()],
+	plugins: [usePHP()],
 });
 ```
 
@@ -75,37 +75,37 @@ The configuration takes following properties:
 
 ```ts
 type UsePHPConfig = {
-   binary?: string;
-   // Override default PHP server host address. Default is `localhost`.
-   php?: { host?: string };
-   entry?: string | string[];
-   rewriteUrl?: (requestUrl: URL) => URL | undefined;
-   tempDir?: string;
-   dev?: {
-      // Takes on either a bitmask, or named constants EPHPError
-      errorLevels?: number;
-      cleanup?: boolean;
-   };
+	binary?: string;
+	// Override default PHP server host address. Default is `localhost`.
+	php?: { host?: string };
+	entry?: string | string[];
+	rewriteUrl?: (requestUrl: URL) => URL | undefined;
+	tempDir?: string;
+	dev?: {
+		// Takes on either a bitmask, or named constants EPHPError
+		errorLevels?: number;
+		cleanup?: boolean;
+	};
 };
 
 // Detailed description on https://www.php.net/manual/en/errorfunc.constants.php
 const EPHPError = {
-   ERROR: 1,
-   WARNING: 2,
-   PARSE: 4,
-   NOTICE: 8,
-   CORE_ERROR: 16,
-   CORE_WARNING: 32,
-   COMPILE_ERROR: 64,
-   COMPILE_WARNING: 128,
-   USER_ERROR: 256,
-   USER_WARNING: 512,
-   USER_NOTICE: 1024,
-   STRICT: 2048,
-   RECOVERABLE_ERROR: 4096,
-   DEPRECATED: 8192,
-   USER_DEPRECATED: 16384,
-   ALL: 32767,
+	ERROR: 1,
+	WARNING: 2,
+	PARSE: 4,
+	NOTICE: 8,
+	CORE_ERROR: 16,
+	CORE_WARNING: 32,
+	COMPILE_ERROR: 64,
+	COMPILE_WARNING: 128,
+	USER_ERROR: 256,
+	USER_WARNING: 512,
+	USER_NOTICE: 1024,
+	STRICT: 2048,
+	RECOVERABLE_ERROR: 4096,
+	DEPRECATED: 8192,
+	USER_DEPRECATED: 16384,
+	ALL: 32767,
 };
 ```
 
@@ -117,8 +117,8 @@ However you have the possibility to use an other binary or even compile multiple
 
 ```js
 usePHP({
-   binary: '/opt/lampp/bin/php-8.1.10',
-   entry: ['index.php', 'index_alt.php', 'pages/contact.php'],
+	binary: '/opt/lampp/bin/php-8.1.10',
+	entry: ['index.php', 'index_alt.php', 'pages/contact.php'],
 });
 ```
 
@@ -137,14 +137,14 @@ You can also specify wildcard entry points:
 
 ```js
 usePHP({
-   binary: '/opt/lampp/bin/php-8.1.10',
-   entry: [
-      'index.php',
-      'about.php',
-      'contact.php',
-      'pages/**/*.php',
-      'partials/*.php',
-   ],
+	binary: '/opt/lampp/bin/php-8.1.10',
+	entry: [
+		'index.php',
+		'about.php',
+		'contact.php',
+		'pages/**/*.php',
+		'partials/*.php',
+	],
 });
 ```
 
@@ -157,17 +157,17 @@ The rewriteUrl function has one parameter - the requested URL given as URL objec
 
 ```js
 usePHP({
-   entry: ['index.php', 'partials/**/*.php'],
-   rewriteUrl(requestUrl) {
-      if (['.js', '.css'].some((s) => requestUrl.pathname.includes(s))) {
-         return;
-      }
+	entry: ['index.php', 'partials/**/*.php'],
+	rewriteUrl(requestUrl) {
+		if (['.js', '.css'].some((s) => requestUrl.pathname.includes(s))) {
+			return;
+		}
 
-      requestUrl.search = '_request_=' + requestUrl.pathname;
-      requestUrl.pathname = 'index.php';
+		requestUrl.search = '_request_=' + requestUrl.pathname;
+		requestUrl.pathname = 'index.php';
 
-      return requestUrl;
-   },
+		return requestUrl;
+	},
 });
 ```
 
@@ -183,14 +183,14 @@ import { defineConfig } from 'vite';
 import usePHP, { EPHPError } from 'vite-plugin-php';
 
 export default defineConfig({
-   plugins: [
-      usePHP({
-         dev: {
-            errorLevels:
-               EPHPError.ERROR | EPHPError.WARNING | EPHPError.STRICT,
-         },
-      }),
-   ],
+	plugins: [
+		usePHP({
+			dev: {
+				errorLevels:
+					EPHPError.ERROR | EPHPError.WARNING | EPHPError.STRICT,
+			},
+		}),
+	],
 });
 ```
 
@@ -228,6 +228,26 @@ plugins: [
 This adds a hook to run between loading the PHP code and unescaping PHP fragments, prior to passing everything further to Vite's own HTML transformation magic.
 
 #### `after` PHP and Vite transforms
+
+```ts
+// vite.config.ts
+...,
+plugins: [
+   usePHP(),
+   {
+      name: 'post-transform',
+      transformIndexHtml(html, ctx) {
+        return html.replace(
+          '</body>',
+          '<div><?= "Post PHP transform"; ?></div></body>',
+        );
+      },
+   },
+],
+...
+```
+
+or
 
 ```ts
 // vite.config.ts

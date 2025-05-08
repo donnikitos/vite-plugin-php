@@ -65,7 +65,9 @@ const buildPlugin: Plugin[] = [
 	{
 		name: 'php:build-unescape',
 		apply: 'build',
+		enforce: 'post',
 		transformIndexHtml: {
+			order: 'post',
 			handler(html, ctx) {
 				const entry = entryMap.get(ctx.filename);
 
