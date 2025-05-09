@@ -150,6 +150,33 @@ const servePlugin: Plugin[] = [
 		name: 'php:serve-unescape',
 		apply: 'serve',
 		enforce: 'post',
+		transform: {
+			order: 'post',
+			handler(code, id, options) {
+				let entry = '';
+
+				if (
+					id.includes('html-proxy') &&
+					shared.entries.some((entryItem) => {
+						const res = id.startsWith(`\0/${entryItem}.html?`);
+
+						if (res) {
+							entry = entryItem;
+
+							return true;
+						}
+					})
+				) {
+					const escapes = codeMap.get(entry);
+
+					if (escapes) {
+						return {
+							code: PHP_Code.unescape(code, escapes),
+						};
+					}
+				}
+			},
+		},
 		transformIndexHtml: {
 			order: 'post',
 			handler(html, ctx) {
