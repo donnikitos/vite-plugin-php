@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-php",
-	"version": "3.0.0-beta.0",
+	"version": "3.0.0-beta.1",
 	"author": "Nikita 'donnikitos' Nitichevski <me@donnikitos.com> (https://donnikitos.com/)",
 	"repository": {
 		"type": "git",
@@ -20,8 +20,6 @@
 	},
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.mjs",
 			"require": {
 				"types": "./dist/index.d.cts",
 				"default": "./dist/index.cjs"
@@ -29,7 +27,9 @@
 			"import": {
 				"types": "./dist/index.d.mts",
 				"default": "./dist/index.mjs"
-			}
+			},
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.mjs"
 		}
 	},
 	"bugs": {
