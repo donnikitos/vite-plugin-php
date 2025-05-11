@@ -6,6 +6,10 @@ import http, { type IncomingHttpHeaders, IncomingMessage } from 'node:http';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import PHP_Server from '.';
+import {
+	viteClientInjection,
+	viteClientInjectionPattern,
+} from '../fixAssetsInjection';
 
 const phpProxy: Connect.NextHandleFunction = async (req, res, next) => {
 	try {
@@ -108,8 +112,23 @@ const phpProxy: Connect.NextHandleFunction = async (req, res, next) => {
 								reject(error);
 							})
 							.on('close', () => {
-								const content =
+								let content =
 									Buffer.concat(chunks).toString('utf8');
+
+								if (
+									incomingHeaders['content-type']?.includes(
+										'text/html',
+									) &&
+									!viteClientInjectionPattern.test(content)
+								) {
+									content = viteClientInjection + content;
+
+									if (incomingHeaders['content-length']) {
+										incomingHeaders[
+											'content-length'
+										] = `${content.length}`;
+									}
+								}
 
 								resolve({
 									statusCode,

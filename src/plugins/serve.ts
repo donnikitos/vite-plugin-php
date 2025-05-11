@@ -7,7 +7,10 @@ import { tempName, writeFile } from '../utils/file';
 import PHP_Code from '../utils/PHP_Code';
 import handleExit from '../utils/handleExit';
 import phpProxy from '../utils/PHP_Server/proxy';
-import { fixAssetsInjection } from '../utils/fixAssetsInjection';
+import {
+	fixAssetsInjection,
+	viteClientInjectionPattern,
+} from '../utils/fixAssetsInjection';
 
 export const serve = {
 	rewriteUrl: (url: URL) => url as URL | undefined,
@@ -195,6 +198,13 @@ const servePlugin: Plugin[] = [
 						php.code = PHP_Code.unescape(php.code, escapes);
 					}
 					php.code = fixAssetsInjection(php.code);
+
+					if (!php.code.includes('</head>')) {
+						php.code = php.code.replace(
+							new RegExp(viteClientInjectionPattern, 'gsi'),
+							'',
+						);
+					}
 
 					php.write(tempName(entry));
 

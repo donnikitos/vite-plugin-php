@@ -4,6 +4,12 @@ const assetsPattern = new RegExp(
 	`^(.+?)(${phpStartPattern}\\s+namespace\\s\\S+?(?:\\s*;|\\s*{).+)$`,
 	'si',
 );
+export const viteClientInjection =
+	'<script type="module" src="/@vite/client"></script>\n';
+export const viteClientInjectionPattern = new RegExp(
+	'<script.+?src="/@vite/client".+?</script>(\r\n|\n|\r)',
+	'si',
+);
 
 const lastTagPattern = new RegExp(`^(.+(?:</.+?>|<.+?/>))(.+|)$`, 'si');
 const closingPattern = new RegExp(`^(.+)(${phpStartPattern}.+)$`, 'si');
