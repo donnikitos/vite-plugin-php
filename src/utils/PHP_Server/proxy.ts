@@ -23,11 +23,11 @@ const phpProxy: Connect.NextHandleFunction = async (req, res, next) => {
 				throw error;
 			});
 
-			const url = new URL(req.url, 'http://localhost');
+			let url = new URL(req.url, 'http://localhost');
 			if (shared.viteConfig?.server.port) {
 				url.port = shared.viteConfig.server.port.toString();
 			}
-			const requestUrl = url.pathname;
+			const requestUrl = new URL(url);
 
 			if (url.pathname.endsWith('/')) {
 				url.pathname += 'index.php';
@@ -35,9 +35,15 @@ const phpProxy: Connect.NextHandleFunction = async (req, res, next) => {
 
 			const routedUrl = serve.rewriteUrl(url);
 			if (routedUrl) {
-				url.pathname = routedUrl.pathname;
-				url.search = routedUrl.search;
-				url.hash = routedUrl.hash;
+				// Check if rewrite is an external URL and redirect
+				if (routedUrl.origin !== requestUrl.origin) {
+					res.writeHead(307, {
+						location: routedUrl.toString(),
+					}).end();
+					return;
+				}
+
+				url = routedUrl;
 			}
 
 			const entryPathname = url.pathname.substring(1);
@@ -60,7 +66,7 @@ const phpProxy: Connect.NextHandleFunction = async (req, res, next) => {
 					url.searchParams.set(
 						internalParam,
 						new URLSearchParams({
-							$REQUEST_URI: requestUrl,
+							$REQUEST_URI: requestUrl.pathname,
 							$PHP_SELF: '/' + entry,
 							temp_dir: shared.tempDir,
 							error_levels:
