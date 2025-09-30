@@ -57,11 +57,11 @@ const servePlugin: Plugin = {
 						throw error;
 					});
 
-					const url = new URL(req.url, 'http://localhost');
+					let url = new URL(req.url, 'http://localhost');
 					if (shared.viteConfig?.server.port) {
 						url.port = shared.viteConfig.server.port.toString();
 					}
-					const requestUrl = url.pathname;
+					const requestUrl = new URL(url);
 
 					if (url.pathname.endsWith('/')) {
 						url.pathname += 'index.php';
@@ -69,11 +69,18 @@ const servePlugin: Plugin = {
 
 					const routedUrl = serve.rewriteUrl(url);
 					if (routedUrl) {
-						url.pathname = routedUrl.pathname;
-						url.search = routedUrl.search;
-						url.hash = routedUrl.hash;
+						// Check if rewrite is an external URL and redirect
+						if (routedUrl.origin !== requestUrl.origin) {
+							res.writeHead(307, {
+								location: routedUrl.toString(),
+							}).end();
+							return;
+						}
+
+						url = routedUrl;
 					}
 
+					// Check if request is one of the PHP-entries and process
 					const entryPathname = url.pathname.substring(1);
 
 					const entry = shared.entries.find((file) => {
@@ -95,7 +102,7 @@ const servePlugin: Plugin = {
 							url.searchParams.set(
 								internalParam,
 								new URLSearchParams({
-									$REQUEST_URI: requestUrl,
+									$REQUEST_URI: requestUrl.pathname,
 									$PHP_SELF: '/' + entry,
 									temp_dir: shared.tempDir,
 									error_levels:
@@ -176,9 +183,9 @@ const servePlugin: Plugin = {
 								)
 							) {
 								out = await server.transformIndexHtml(
-									`/${entry}.html:${requestUrl}`,
+									`/${entry}.html:${requestUrl.pathname}`,
 									out,
-									requestUrl,
+									requestUrl.pathname,
 								);
 							}
 
