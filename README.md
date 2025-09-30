@@ -179,6 +179,21 @@ usePHP({
 });
 ```
 
+Since version 2.0.4 it is possible to point to some external files. Make sure the change URL points to an external origin:
+
+```js
+usePHP({
+	rewriteUrl(requestUrl) {
+		if (requestUrl.pathname.startsWith('/media/')) {
+			return new URL(
+				'https://nititech.de' +
+					requestUrl.toString().substring(requestUrl.origin.length),
+			);
+		}
+	},
+});
+```
+
 ⚠️ **Attention:** If using the rewriteUrl property you will need to exclude (_return undefined_) assets like CSS, JavaScript, Images, etc.., that match your transpiled php file names, on your own!
 
 #### Error logging
