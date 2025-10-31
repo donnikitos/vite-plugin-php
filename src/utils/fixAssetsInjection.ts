@@ -7,7 +7,7 @@ const assetsPattern = new RegExp(
 export const viteClientInjection =
 	'<script type="module" src="/@vite/client"></script>\n';
 export const viteClientInjectionPattern = new RegExp(
-	'<script.+?src="/@vite/client".+?</script>(\r\n|\n|\r)',
+	'<script[^>]+?src="/@vite/client".+?</script>(\r\n|\n|\r)',
 	'si',
 );
 
