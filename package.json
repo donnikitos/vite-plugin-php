@@ -68,7 +68,7 @@
 	"scripts": {
 		"build": "npx unbuild",
 		"prepack": "npm run build",
-		"test": "bun test --preload ./tests/setup.ts"
+		"test": "bun test"
 	},
 	"type": "module",
 	"types": "./dist/index.d.ts"
