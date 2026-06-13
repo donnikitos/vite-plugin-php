@@ -41,6 +41,7 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 					...new Set(
 						shared.entries.flatMap((entry) =>
 							fastGlob.globSync(entry, {
+								cwd: config.root,
 								dot: true,
 								onlyFiles: true,
 								unique: true,
