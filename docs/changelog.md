@@ -11,14 +11,14 @@
 
 ### Major release 2.0.0
 
--   Rewritten and improved plugin code -> cleaner and more understandable codebase
--   No more code escaping during development -> faster and less intensive processing
--   Implemented PHP error logging directly into Vite console
-    -   Error levels are adjustable, just like in the good ol' PHP
--   Fixed env replacements during development
--   Fixed file inclusion during development
--   Improved asset injection for namespaced files
--   Improved plugin shutdown and cleanup functionality
+- Rewritten and improved plugin code -> cleaner and more understandable codebase
+- No more code escaping during development -> faster and less intensive processing
+- Implemented PHP error logging directly into Vite console
+    - Error levels are adjustable, just like in the good ol' PHP
+- Fixed env replacements during development
+- Fixed file inclusion during development
+- Improved asset injection for namespaced files
+- Improved plugin shutdown and cleanup functionality
 
 ### Releases >= 1.0.0
 

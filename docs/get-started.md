@@ -17,7 +17,7 @@ import { defineConfig } from 'vite';
 import usePHP from 'vite-plugin-php';
 
 export default defineConfig({
-  plugins: [usePHP()],
+	plugins: [usePHP()],
 });
 ```
 
@@ -45,7 +45,7 @@ Instead of the `index.html` create an `index.php` file in your project root:
     <title>Vite PHP Integration</title>
   </head>
   <body>
-    <?php echo "Hello, Vite and PHP!"; ?>
+    <?php echo 'Hello, Vite and PHP!'; ?>
 
     <?php if (isset($_GET['show_me'])): ?>
       Hello world!

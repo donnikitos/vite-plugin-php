@@ -130,9 +130,8 @@ const phpProxy: Connect.NextHandleFunction = async (req, res, next) => {
 									content = viteClientInjection + content;
 
 									if (incomingHeaders['content-length']) {
-										incomingHeaders[
-											'content-length'
-										] = `${content.length}`;
+										incomingHeaders['content-length'] =
+											`${content.length}`;
 									}
 								}
 

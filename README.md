@@ -55,10 +55,10 @@ Plugin now fully utilizes the Vite pipeline to load, transform and HTML-transfor
   </head>
   <body>
     <div id="root">
-      <?="Render some text with PHP!"; ?>
+      <?= 'Render some text with PHP!' ?>
     </div>
 
-    <?php if(isset($_GET['show_hello'])): ?>
+    <?php if (isset($_GET['show_hello'])): ?>
       Hello world!
     <?php endif; ?>
 
@@ -296,11 +296,10 @@ E.g. you have a page with some variables:
 
 ```php
 <?php
-$var = 'foo';
-?>
+$var = 'foo'; ?>
 
 <script type="module">
-   console.log('<?=$var; ?>');
+   console.log('<?= $var ?>');
 </script>
 ```
 

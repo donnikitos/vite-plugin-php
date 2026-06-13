@@ -7,8 +7,8 @@ describe('handleExit', () => {
 	});
 
 	it('registers listeners for all exit signals', () => {
-		const initialCounts = exitSignals.map(
-			(signal) => process.listenerCount(signal),
+		const initialCounts = exitSignals.map((signal) =>
+			process.listenerCount(signal),
 		);
 
 		handleExit.register();
@@ -19,8 +19,8 @@ describe('handleExit', () => {
 	});
 
 	it('unregisters previously registered listeners', () => {
-		const initialCounts = exitSignals.map(
-			(signal) => process.listenerCount(signal),
+		const initialCounts = exitSignals.map((signal) =>
+			process.listenerCount(signal),
 		);
 
 		handleExit.register();
