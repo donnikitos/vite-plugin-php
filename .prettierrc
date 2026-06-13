@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json.schemastore.org/prettierrc",
+	"phpVersion": "8.2",
+	"plugins": ["@prettier/plugin-php"],
+	"printWidth": 80,
+	"tabWidth": 4,
+	"useTabs": true,
+	"semi": true,
+	"singleQuote": true,
+	"jsxSingleQuote": false,
+	"quoteProps": "consistent",
+	"trailingComma": "all",
+	"trailingCommaPHP": true,
+	"braceStyle": "1tbs",
+	"bracketSpacing": true,
+	"bracketSameLine": false,
+	"arrowParens": "always",
+	"htmlWhitespaceSensitivity": "ignore",
+	"endOfLine": "lf",
+	"embeddedLanguageFormatting": "auto"
+}
