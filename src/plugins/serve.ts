@@ -198,13 +198,10 @@ const servePlugin: Plugin[] = [
 						php.code = PHP_Code.unescape(php.code, escapes);
 					}
 					php.code = fixAssetsInjection(php.code);
-
-					if (!php.code.includes('</head>')) {
-						php.code = php.code.replace(
-							new RegExp(viteClientInjectionPattern, 'gsi'),
-							'',
-						);
-					}
+					php.code = php.code.replace(
+						new RegExp(viteClientInjectionPattern, 'gsi'),
+						'',
+					);
 
 					php.write(tempName(entry));
 

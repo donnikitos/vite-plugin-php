@@ -125,9 +125,13 @@ const phpProxy: Connect.NextHandleFunction = async (req, res, next) => {
 									incomingHeaders['content-type']?.includes(
 										'text/html',
 									) &&
+									content.includes('</head>') &&
 									!viteClientInjectionPattern.test(content)
 								) {
-									content = viteClientInjection + content;
+									content = content.replace(
+										'</head>',
+										`${viteClientInjection}</head>`,
+									);
 
 									if (incomingHeaders['content-length']) {
 										incomingHeaders['content-length'] =
