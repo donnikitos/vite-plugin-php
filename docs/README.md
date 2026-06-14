@@ -151,11 +151,6 @@
 </style>
 
 <div class="vphp-hero">
-	<img
-		class="vphp-hero__logo"
-		src="https://vite-php.nititech.de/assets/vite-php.logo.svg"
-		alt="vite-plugin-php logo"
-	/>
 	<h1 class="vphp-hero__title">vite-plugin-php</h1>
 	<p class="vphp-hero__subtitle">
 		Use Vite's speed, HMR and ecosystem to build with PHP.
