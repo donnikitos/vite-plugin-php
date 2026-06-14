@@ -2,23 +2,37 @@
 
 ### Latest
 
-| Version | Feature                                                                                                                                                                                       |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.0.4   | Updated `rewriteUrl` parameter handling to be able to point to external URLs.                                                                                                                 |
-| 2.0.3   | - Fixed exit hook pollution during development: Vite server restarts are no longer registering multiple exit handlers.<br />- Temporary PHP-directory is no longer being watched for changes. |
-| 2.0.2   | - Added ability to run multiple projects that use vite-plugin-php in parallel!<br />- Added possibility to override default PHP server host address.                                          |
-| 2.0.1   | Fixed script module individualization during development. Virtual script module names now include original request path                                                                       |
+| Version      | Feature                                                                                                                                                                                            |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.0.0-beta.5 | Plugin now fully utilizes the Vite pipeline to load, transform and HTML-transform files in proper order. ⚠️ This may result in breaking changes because code can now be affected by other plugins. |
+| 2.0.4        | Updated `rewriteUrl` parameter handling to be able to point to external URLs.                                                                                                                      |
+| 2.0.3        | - Fixed exit hook pollution during development: Vite server restarts are no longer registering multiple exit handlers.<br />- Temporary PHP-directory is no longer being watched for changes.      |
+| 2.0.2        | - Added ability to run multiple projects that use vite-plugin-php in parallel!<br />- Added possibility to override default PHP server host address.                                               |
+| 2.0.1        | Fixed script module individualization during development. Virtual script module names now include original request path.                                                                           |
+
+### Major release 3.0.0
+
+- Rewritten plugin pipeline to use Vite's native load, transform and HTML-transform hooks.
+- PHP files are now processed through the same lifecycle as HTML entries, allowing other plugins to run before and after PHP.
+- ⚠️ Other plugins can now affect the output, which may introduce breaking changes for existing custom plugins.
+- No more code escaping during development → faster and less intensive processing.
+- Implemented PHP error logging directly into the Vite console.
+    - Error levels are adjustable, just like in native PHP.
+- Fixed env replacements during development.
+- Fixed file inclusion during development.
+- Improved asset injection for namespaced files.
+- Improved plugin shutdown and cleanup functionality.
 
 ### Major release 2.0.0
 
--   Rewritten and improved plugin code -> cleaner and more understandable codebase
--   No more code escaping during development -> faster and less intensive processing
--   Implemented PHP error logging directly into Vite console
-    -   Error levels are adjustable, just like in the good ol' PHP
--   Fixed env replacements during development
--   Fixed file inclusion during development
--   Improved asset injection for namespaced files
--   Improved plugin shutdown and cleanup functionality
+- Rewritten and improved plugin code → cleaner and more understandable codebase.
+- No more code escaping during development → faster and less intensive processing.
+- Implemented PHP error logging directly into Vite console.
+    - Error levels are adjustable, just like in the good ol' PHP.
+- Fixed env replacements during development.
+- Fixed file inclusion during development.
+- Improved asset injection for namespaced files.
+- Improved plugin shutdown and cleanup functionality.
 
 ### Releases >= 1.0.0
 
@@ -34,7 +48,7 @@
 | 1.0.65  | Fixed request body forwarding for all request methods                                                                              |
 | 1.0.62  | HTML transforms are now only applied to HTML contents during dev                                                                   |
 | 1.0.61  |                                                                                                                                    |
-| 1.0.60  | Fixed inline module transpiling -> PHP code is being properly inserted into transpiled inline module chunks                        |
+| 1.0.60  | Fixed inline module transpiling → PHP code is being properly inserted into transpiled inline module chunks                         |
 | 1.0.55  |                                                                                                                                    |
 | 1.0.50  |                                                                                                                                    |
 | 1.0.40  |                                                                                                                                    |

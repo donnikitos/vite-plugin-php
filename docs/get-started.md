@@ -1,57 +1,110 @@
 # Get started
 
-### Installation
+This guide walks you through creating your first PHP project powered by Vite.
 
-First, install vite-plugin-php using npm:
+## What you need
+
+- A working [Node.js](https://nodejs.org/) installation.
+- A PHP binary available on your system path. Run `php -v` in your terminal to verify.
+
+## Step 1: Create a project
+
+Create a folder for your project and install Vite plus the plugin:
 
 ```bash
-npm install vite-plugin-php@latest --save-dev
+mkdir my-php-app
+cd my-php-app
+npm install vite vite-plugin-php@latest --save-dev
 ```
 
-### Adjust Vite
+## Step 2: Configure Vite
 
-To configure Vite to use vite-plugin-php, update your `vite.config.js` file as follows:
+Create a `vite.config.ts` file in the project root:
 
-```javascript
+```js
+// vite.config.ts
 import { defineConfig } from 'vite';
 import usePHP from 'vite-plugin-php';
 
 export default defineConfig({
-  plugins: [usePHP()],
+	plugins: [usePHP()],
 });
 ```
 
-ℹ️ By default, the plugin attempts to access the system's php binary and uses `index.php` as the main entry point.\
-You can alos customize the PHP binary path or specify multiple entry points:
+By default the plugin looks for a system `php` binary and uses `index.php` as the only entry point.
 
-```
-usePHP({
-  binary: '/path/to/php', // Specify your PHP binary path
-  entry: ['index.php', 'about.php', 'contact.php'], // Multiple entry points
-});
-```
+## Step 3: Create your PHP entry
 
-### Use PHP
-
-Instead of the `index.html` create an `index.php` file in your project root:
+Delete `index.html` if it exists and create `index.php` instead:
 
 ```php
+<!-- index.php -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite PHP Integration</title>
-  </head>
-  <body>
-    <?php echo "Hello, Vite and PHP!"; ?>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>My PHP App</title>
+		<link rel="stylesheet" href="./src/style.css" />
+	</head>
 
-    <?php if (isset($_GET['show_me'])): ?>
-      Hello world!
-    <?php endif; ?>
-  </body>
+	<body>
+		<h1><?= 'Hello from PHP!' ?></h1>
+
+		<?php if (isset($_GET['visitor'])): ?>
+			<p>Welcome back, <?= htmlspecialchars($_GET['visitor']) ?>!</p>
+		<?php endif; ?>
+
+		<script src="./src/main.js" type="module"></script>
+	</body>
 </html>
 ```
 
-With this setup, `vite-plugin-php` processes your `index.php` file, including all imported and preprocessed assets supported by Vite and other loaders.
+## Step 4: Add assets
+
+Create a `src` folder with a script and a stylesheet:
+
+```js
+// src/main.js
+import './style.css';
+
+console.log('Vite + PHP are working!');
+```
+
+```css
+/* src/style.css */
+body {
+	font-family: system-ui, sans-serif;
+	padding: 2rem;
+}
+```
+
+## Step 5: Run the dev server
+
+```bash
+npx vite
+```
+
+Open the URL shown in your terminal, for example `http://localhost:5173`. You should see your rendered PHP page. Try adding `?visitor=Alice` to the URL to see the conditional PHP block in action.
+
+## Step 6: Build for production
+
+```bash
+npx vite build
+```
+
+The `dist/` folder will contain:
+
+- `index.php` with the processed PHP source.
+- Hashed JavaScript and CSS assets.
+- Any other imported assets.
+
+You can now deploy the `dist/` folder to any static or PHP host.
+
+## Common next steps
+
+- [Configure the plugin](./configuration/)
+- [Add more entry points](./configuration/entry.md)
+- [Set up URL rewrites](./routing/rewrite-rules.md)
+- [Use environment variables](./examples/env-variables.md)
+- [Combine with other Vite plugins](./vite-pipeline/)
