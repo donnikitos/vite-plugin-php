@@ -1,9 +1,9 @@
 import type { Plugin } from 'vite';
 import PHP_Server from './utils/PHP_Server';
-import fastGlob from 'fast-glob';
 import servePlugin, { serve } from './plugins/serve';
 import buildPlugin from './plugins/build';
 import { shared } from './shared';
+import findFiles from './utils/findFiles';
 
 export * from './enums/php-error';
 
@@ -20,12 +20,12 @@ export type UsePHPConfig = {
 };
 
 function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
-	const { entry = 'index.php' } = cfg;
+	const { entry = shared.entryPatterns } = cfg;
 
 	PHP_Server.binary = cfg.binary ?? PHP_Server.binary;
 	PHP_Server.host = cfg.php?.host ?? PHP_Server.host;
 	serve.rewriteUrl = cfg.rewriteUrl ?? serve.rewriteUrl;
-	shared.entries = Array.isArray(entry) ? entry : [entry];
+	shared.entryPatterns = Array.isArray(entry) ? entry : [entry];
 	shared.tempDir = cfg.tempDir ?? shared.tempDir;
 	shared.devConfig = {
 		cleanup: cfg.dev?.cleanup || shared.devConfig.cleanup,
@@ -37,22 +37,10 @@ function usePHP(cfg: UsePHPConfig = {}): Plugin[] {
 			name: 'php:init',
 			enforce: 'post',
 			config(config, env) {
-				shared.entries = [
-					...new Set(
-						shared.entries.flatMap((entry) =>
-							fastGlob.globSync(entry, {
-								cwd: config.root,
-								dot: true,
-								onlyFiles: true,
-								unique: true,
-								ignore: [
-									shared.tempDir,
-									config.build?.outDir || 'dist',
-								],
-							}),
-						),
-					),
-				];
+				shared.entries = findFiles(shared.entryPatterns, config.root, [
+					shared.tempDir,
+					config.build?.outDir || 'dist',
+				]);
 
 				return {
 					server: {

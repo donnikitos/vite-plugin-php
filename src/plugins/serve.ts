@@ -1,6 +1,6 @@
 import type { Logger, Plugin, ViteDevServer } from 'vite';
 import { resolve } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { shared } from '../shared';
 import PHP_Server from '../utils/PHP_Server';
 import { tempName, writeFile } from '../utils/file';
@@ -11,6 +11,8 @@ import {
 	fixAssetsInjection,
 	viteClientInjectionPattern,
 } from '../utils/fixAssetsInjection';
+import findFiles from '../utils/findFiles';
+import escapeRegExp from '../utils/escapeRegExp';
 
 export const serve = {
 	rewriteUrl: (url: URL) => url as URL | undefined,
@@ -19,6 +21,12 @@ export const serve = {
 let devServer: undefined | ViteDevServer = undefined;
 
 let entryMatcher: RegExp = new RegExp(``, 'gs');
+function updateEntryMatcher() {
+	entryMatcher = new RegExp(
+		`(${shared.entries.map(escapeRegExp).join('|')}).html`,
+		'gs',
+	);
+}
 
 const codeMap = new Map<string, Record<string, string>>();
 
@@ -35,10 +43,7 @@ const servePlugin: Plugin[] = [
 					writeFile(gitIgnoreFile, '*\r\n**/*');
 				}
 
-				entryMatcher = new RegExp(
-					`(${shared.entries.join('|')}).html`,
-					'gs',
-				);
+				updateEntryMatcher();
 			},
 		},
 		configureServer: {
@@ -214,30 +219,70 @@ const servePlugin: Plugin[] = [
 		name: 'php:serve-watch',
 		apply: 'serve',
 		async watchChange(id, change) {
+			const resolvedId = resolve(id);
+			const root = devServer?.config.root || process.cwd();
 			const entry = shared.entries.find(
-				(entryFile) => resolve(entryFile) === resolve(id),
+				(entryFile) => resolve(root, entryFile) === resolvedId,
 			);
 
-			if (entry) {
-				// Fail silently - `vite:import-analysis` plugin doesn't like the second load
+			if (change.event === 'delete' && entry) {
+				// Fail silently - in case there already was a cleanup
 				try {
-					await this.load({
-						id: entry,
-					});
+					rmSync(resolve(shared.tempDir, entry));
 				} catch (error) {
 					// console.log('error', error);
+				}
+			} else {
+				const loadEntry = async (entry: string) => {
+					// Fail silently - `vite:import-analysis` plugin doesn't like the second load
+					try {
+						await this.load({
+							id: entry,
+						});
+					} catch (error) {
+						// console.log('error', error);
+					}
+				};
+
+				if (entry) {
+					await loadEntry(entry);
+				} else if (
+					devServer &&
+					!resolvedId.startsWith(resolve(shared.tempDir)) &&
+					resolvedId.includes('.php')
+				) {
+					const priorEntries = shared.entries;
+
+					shared.entries = findFiles(
+						shared.entryPatterns,
+						devServer.config.root,
+						[
+							shared.tempDir,
+							devServer.config.build?.outDir || 'dist',
+						],
+					);
+					updateEntryMatcher();
+
+					const allEntries = shared.entries;
+					const newEntries = allEntries.filter(
+						(entry) => !priorEntries.includes(entry),
+					);
+
+					await Promise.allSettled(newEntries.map(loadEntry));
 				}
 			}
 		},
 		handleHotUpdate({ server, file }) {
+			const resolvedFile = resolve(file);
+			const root = devServer?.config.root || process.cwd();
 			const entry = shared.entries.find(
-				(entryFile) => resolve(entryFile) === resolve(file),
+				(entryFile) => resolve(root, entryFile) === resolvedFile,
 			);
 
 			if (
 				entry ||
-				(!file.startsWith(resolve(shared.tempDir)) &&
-					file.includes('.php'))
+				(!resolvedFile.startsWith(resolve(shared.tempDir)) &&
+					resolvedFile.includes('.php'))
 			) {
 				server.ws.send({
 					type: 'full-reload',

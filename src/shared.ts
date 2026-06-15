@@ -11,6 +11,7 @@ export const shared = {
 		cleanup: true,
 		errorLevels: EPHPError.ALL | EPHPError.STRICT,
 	} as NonNullable<Required<UsePHPConfig['dev']>>,
-	entries: [] as string[],
+	entryPatterns: ['index.php'],
+	entries: ['index.php'],
 	tempDir: '.php-tmp',
 };
