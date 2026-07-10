@@ -1,5 +1,5 @@
 import { relative } from 'node:path';
-import { normalizePath, UserConfig } from 'vite';
+import { normalizePath, type UserConfig } from 'vite';
 import colors from 'picocolors';
 import { shared } from '../shared';
 import { hasViteConfig } from './assert';

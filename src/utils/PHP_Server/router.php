@@ -5,7 +5,8 @@ parse_str($_GET[$internal_param], $internal_vars);
 unset($_GET[$internal_param]);
 
 ini_set('log_errors', 0); // Disable logging
-ini_set( // Just in case: set to writable file
+ini_set(
+	// Just in case: set to writable file
 	'error_log',
 	sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-' . getmypid() . '.log',
 );
@@ -19,16 +20,21 @@ set_error_handler(function (
 ) use ($internal_param) {
 	file_put_contents(
 		'php://stdout',
-		"$internal_param:" . json_encode(
-			[
-				'code' => $code,
-				'message' => $message,
-				'file' => $file,
-				'line' => $line,
-				'context' => $context,
-			],
-			JSON_FORCE_OBJECT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
-		) . "\r\n",
+		"$internal_param:" .
+			json_encode(
+				[
+					'code' => $code,
+					'message' => $message,
+					'file' => $file,
+					'line' => $line,
+					'context' => $context,
+				],
+				JSON_FORCE_OBJECT |
+					JSON_NUMERIC_CHECK |
+					JSON_UNESCAPED_SLASHES |
+					JSON_UNESCAPED_UNICODE,
+			) .
+			"\r\n",
 	);
 }, $internal_vars['error_levels'] ?? E_ALL);
 
@@ -41,7 +47,8 @@ foreach ($internal_vars as $key => $value) {
 }
 
 $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
-$_SERVER['SCRIPT_FILENAME'] = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
+$_SERVER['SCRIPT_FILENAME'] =
+	$_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_NAME'];
 $_SERVER['QUERY_STRING'] = http_build_query($_GET);
 
 ini_set(
@@ -57,8 +64,8 @@ ini_set(
 
 try {
 	(function () {
-		include(func_get_arg(0));
+		include func_get_arg(0);
 	})($sourceFile);
 } catch (\Throwable $th) {
-	print($th->getMessage());
+	print $th->getMessage();
 }

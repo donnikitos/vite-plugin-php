@@ -1,14 +1,15 @@
 {
 	"compilerOptions": {
-		"outDir": "dist",
 		"target": "ES2020",
-		"moduleResolution": "Node",
-		"module": "ES2020",
+		"module": "preserve",
+		"moduleResolution": "bundler",
+		"types": ["node", "bun"],
 		"strict": true,
 		"declaration": true,
 		"sourceMap": true,
 		"noUnusedLocals": true,
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"verbatimModuleSyntax": true
 	},
-	"include": ["src"]
+	"include": ["src", "tests"]
 }
