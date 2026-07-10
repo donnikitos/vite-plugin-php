@@ -15,7 +15,7 @@
 </div>
 
 \
-Use Vite's speed and tooling to work with PHP!
+Use Vite's speed, ecosystem and tooling to build with PHP.
 
 ```js
 // vite.config.js
@@ -29,7 +29,7 @@ export default defineConfig({
 
 <p align="center" style="text-align: center;">
   <b>
-    <a href="https://www.npmjs.com/package/vite-plugin-php">NPM</a> | <a href="https://vite-php.nititech.de/">Wiki</a> | <a href="https://github.com/donnikitos/vite-plugin-php/discussions">Discussions</a> | <a href="https://github.com/nititech/php-vite-starter">Starter-Repo</a>
+    <a href="https://www.npmjs.com/package/vite-plugin-php">NPM</a> | <a href="https://vite-php.nititech.de/">Wiki</a> | <a href="https://github.com/donnikitos/vite-plugin-php/discussions">Discussions</a> | <a href="https://github.com/nititech/modern-php-vite-starter">Starter-Repo</a>
   </b>
 </p>
 
@@ -82,8 +82,10 @@ type UsePHPConfig = {
 	rewriteUrl?: (requestUrl: URL) => URL | undefined;
 	tempDir?: string;
 	dev?: {
-		// Takes on either a bitmask, or named constants EPHPError
+		// Takes on either a bitmask, or named constants EPHPError.
+		// Default is EPHPError.ALL | EPHPError.STRICT.
 		errorLevels?: number;
+		// Cleanup temporary files on shutdown. Default is `true`.
 		cleanup?: boolean;
 	};
 };
@@ -109,7 +111,7 @@ const EPHPError = {
 };
 ```
 
-By default the plugin is trying to access the system `php`-binary and load the `index.php` file as the main entry point.
+By default the plugin tries to access the system `php` binary, load `index.php` as the main entry point and writes temporary PHP files to `.php-tmp`.
 
 #### Alternative entry points
 
@@ -124,14 +126,15 @@ usePHP({
 
 Should you have multiple entry-points, you will be able to access each one according to this chart:
 
-| Entry file        | Accessible routes                     | Build file          |
-| ----------------- | ------------------------------------- | ------------------- |
-| index.php         | `/` `/index` `/index.php`             | `index.php`         |
-| about.php         | `/about` `/about.php`                 | `about.php`         |
-| about/details.php | `/about/details` `/about/details.php` | `about/details.php` |
-| contact.php       | `/contact` `/contact.php`             | `contact.php`       |
-| shop/index.php    | `/shop/` `/shop/index.php`            | `shop/index.php`    |
-| ...               | ...                                   | ...                 |
+| Entry file            | Accessible routes                         | Build output               |
+| --------------------- | ----------------------------------------- | -------------------------- |
+| `index.php`           | `/` `/index` `/index.php`                 | `dist/index.php`           |
+| `about.php`           | `/about` `/about.php`                     | `dist/about.php`           |
+| `about/details.php`   | `/about/details` `/about/details.php`     | `dist/about/details.php`   |
+| `contact.php`         | `/contact` `/contact.php`                 | `dist/contact.php`         |
+| `shop/index.php`      | `/shop/` `/shop/index.php`                | `dist/shop/index.php`      |
+| `pages/blog/post.php` | `/pages/blog/post` `/pages/blog/post.php` | `dist/pages/blog/post.php` |
+| ...                   | ...                                       | ...                        |
 
 You can also specify wildcard entry points:
 
@@ -152,8 +155,8 @@ These entries will also render according to the routing table above.
 
 #### Rewrite urls
 
-If you are using some sort of Apaches _mod_rewrite_ magic or nginx rewrite rules you can simulate them with the newly added in `rewriteUrl` property.
-The rewriteUrl function has one parameter - the requested URL given as URL object - and return either a modified URL object or undefined:
+If you are using some sort of Apache _mod_rewrite_ magic or nginx rewrite rules you can simulate them with the `rewriteUrl` property.
+The `rewriteUrl` function has one parameter — the requested URL given as a `URL` object — and returns either a modified `URL` object or `undefined`:
 
 ```js
 usePHP({
@@ -171,7 +174,9 @@ usePHP({
 });
 ```
 
-Since version 2.0.4 it is possible to point to some external files. Make sure the change URL points to an external origin:
+⚠️ **Attention:** If you use `rewriteUrl` you must exclude static assets like CSS, JavaScript, images and fonts by returning `undefined`, otherwise the plugin tries to send them through PHP.
+
+Since version 2.0.4 it is possible to point to an external origin. Make sure the changed URL points to a different origin:
 
 ```js
 usePHP({
@@ -186,7 +191,7 @@ usePHP({
 });
 ```
 
-⚠️ **Attention:** If using the rewriteUrl property you will need to exclude (_return undefined_) assets like CSS, JavaScript, Images, etc.., that match your transpiled php file names, on your own!
+When the rewritten URL points to a different origin, the plugin responds with a `307 Temporary Redirect`.
 
 #### Error logging
 
@@ -287,50 +292,137 @@ plugins: [
 
 This hook runs right after Vite's transformations and unescaping PHP fragments.
 
-## Specific oddities
+#### Altering transformation results
+
+With additional Vite plugins you can alter the outcome of the [`transformIndexHtml()`](https://vite.dev/guide/api-plugin.html#transformindexhtml) pipeline.\
+The plugin temporarily replaces each PHP fragment with a unique token, lets Vite do its work, then restores the original code.
+
+You can place your own Vite plugins in three useful spots:
+
+1. **Before `usePHP()` with `transformIndexHtml.order: 'pre'`** — inject or modify PHP before the plugin escapes it.
+2. **After `usePHP()` with plain `transformIndexHtml`** — modify HTML after Vite transforms but before PHP is restored.
+3. **After `usePHP()` with `transformIndexHtml.order: 'post'`** — modify the final HTML after PHP is restored.
+
+#### `before` PHP and Vite transforms
+
+```ts
+// vite.config.ts
+...,
+plugins: [
+   {
+      name: 'pre-transform',
+      transformIndexHtml: {
+         order: 'pre',
+         handler(html, ctx) {
+            return html.replace(
+               '</body>',
+               '<div><?= "Pre PHP transform"; ?></div></body>',
+            );
+         },
+      },
+   },
+   usePHP(),
+],
+...
+```
+
+This hook runs between loading the PHP code and unescaping PHP fragments, before Vite's own HTML transformations.
+
+#### `after` PHP and Vite transforms
+
+```ts
+// vite.config.ts
+...,
+plugins: [
+   usePHP(),
+   {
+      name: 'post-transform',
+      transformIndexHtml: {
+         order: 'post',
+         handler(html, ctx) {
+            return html.replace(
+               '</body>',
+               '<div><?= "Post PHP transform"; ?></div></body>',
+            );
+         },
+      },
+   },
+],
+...
+```
+
+This hook runs right after Vite's transformations and unescaping PHP fragments.
+
+## Limitations
+
+vite-plugin-php makes PHP and Vite work together, but there are a few patterns that need special care or do not work the way you might expect.
 
 #### Inline modules
 
-⚠️ PHP will work somehow unintuitive in inlined modules.
-E.g. you have a page with some variables:
+PHP variables are not available inside inline `<script type="module">` blocks.
 
 ```php
-<?php
-$var = 'foo'; ?>
+<?php $var = 'foo'; ?>
 
 <script type="module">
    console.log('<?= $var ?>');
 </script>
 ```
 
-This will not work. `$var` will be undefined in the module since the script is being transpiled into a separate file and included separately.
-Same applies to other server variables like `$_GET`, `$_POST` and so on - they will not have the same value as the main PHP file.
+Vite transpiles inline modules into separate files, so they are no longer part of the same PHP execution. Server variables such as `$_GET` and `$_POST` will also have different values there.
 
-#### Dynamically included asset processing
-
-Vite won't be able to process PHP-computed styles, scripts or images:
+**Workaround:** assign the value to a regular script block or a data attribute before the module:
 
 ```php
-<script src="./src/<?='dynamic_script_name'; ?>.js" type="module"></script>
+<script>
+   window.__VAR__ = '<?= $var ?>';
+</script>
+<script type="module" src="./src/main.js"></script>
 ```
 
-#### Conditional script and style loading
+#### Dynamic asset paths
 
-The plugin won't be able to retain the position of some asset tags like `<script>` and `<link>`.
+Vite cannot process asset paths that are computed by PHP:
 
 ```php
-<?php if($some_condition$) { ?>
+<!-- This will not be bundled -->
+<script src="./src/<?= $script ?>.js" type="module"></script>
+```
+
+Vite needs a literal path at build time. If the set of possible files is known, import them statically and choose at runtime.
+
+#### Conditional script and style tags
+
+If you wrap `<script>` or `<link>` tags in PHP conditionals, Vite might move them to another place.
+
+```php
+<?php if ($some_condition): ?>
    <script src="./src/some_script.js" type="module"></script>
-<?php } ?>
+<?php endif; ?>
 ```
 
-Vite processes these independently and merges/ splits them dynamically.\
-These will be attached to the `<head>` tag or put right in the beginning of the file.
+Vite processes these tags independently and merges or splits them. The resulting tags are typically appended to `<head>` or placed at the start of the document.
 
-If the file contains a PHP **namespace** the assets will be either\
-a) placed after the last closed tag\
-b) placed right before the last `<?` tag\
-c) placed at the end of the file
+A possible workaround is to define those modules in separate PHP files and include them conditionally.
+
+#### PHP namespaces
+
+When the file contains a PHP namespace declaration, the plugin tries to place recovered assets:
+
+1. after the last closed HTML tag, or
+2. right before the last `<?` tag, or
+3. at the end of the file.
+
+If your layout depends on exact tag placement, prefer keeping assets outside of namespaced blocks.
+
+#### External redirects
+
+The `rewriteUrl` option can redirect to external origins, but it runs before Vite handles assets. You must explicitly return `undefined` for static assets to avoid sending them through PHP.
+
+#### Build-time environment variables
+
+Environmental `%ENV%` placeholders are replaced during both dev and build.
+Be careful not to expose secrets because the replaced values are written into `dist/`.
 
 ## Issues
 
