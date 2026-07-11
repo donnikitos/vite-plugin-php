@@ -7,7 +7,31 @@ This guide walks you through creating your first PHP project powered by Vite.
 - A working [Node.js](https://nodejs.org/) installation.
 - A PHP binary available on your system path. Run `php -v` in your terminal to verify.
 
-## Step 1: Create a project
+---
+
+## Get started with our starter repository
+
+1. Clone or use our starter repository template: https://github.com/nititech/modern-php-vite-starter
+2. Install NPM and Composer packages
+
+```bash
+git clone git@github.com:nititech/modern-php-vite-starter.git
+
+npm install
+npm run composer install    # You do not need to use the bundled Composer
+```
+
+3. Start the project
+
+```bash
+npm run dev
+```
+
+---
+
+## Start from scratch
+
+### Step 1: Create a project
 
 Create a folder for your project and install Vite plus the plugin:
 
@@ -17,7 +41,7 @@ cd my-php-app
 npm install vite vite-plugin-php@latest --save-dev
 ```
 
-## Step 2: Configure Vite
+### Step 2: Configure Vite
 
 Create a `vite.config.ts` file in the project root:
 
@@ -33,7 +57,7 @@ export default defineConfig({
 
 By default the plugin looks for a system `php` binary and uses `index.php` as the only entry point.
 
-## Step 3: Create your PHP entry
+### Step 3: Create your PHP entry
 
 Delete `index.html` if it exists and create `index.php` instead:
 
@@ -60,7 +84,7 @@ Delete `index.html` if it exists and create `index.php` instead:
 </html>
 ```
 
-## Step 4: Add assets
+### Step 4: Add assets
 
 Create a `src` folder with a script and a stylesheet:
 
@@ -79,7 +103,7 @@ body {
 }
 ```
 
-## Step 5: Run the dev server
+### Step 5: Run the dev server
 
 ```bash
 npx vite
@@ -87,7 +111,7 @@ npx vite
 
 Open the URL shown in your terminal, for example `http://localhost:5173`. You should see your rendered PHP page. Try adding `?visitor=Alice` to the URL to see the conditional PHP block in action.
 
-## Step 6: Build for production
+### Step 6: Build for production
 
 ```bash
 npx vite build
